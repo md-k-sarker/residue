@@ -10,7 +10,7 @@
 //import org.dase.parser.dl_syntax_owlapi.DLSyntaxParser;
 //import org.dase.parser.javacc.SimpleParser_v2;
 //import org.dase.parser.javacc.SimpleParser_v3;
-//import org.dase.util.Utility;
+//import org.dase.iecii.util.Utility;
 //import org.semanticweb.owlapi.apibinding.OWLManager;
 //import org.semanticweb.owlapi.model.*;
 //import org.semanticweb.owlapi.reasoner.*;

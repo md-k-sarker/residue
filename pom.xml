@@ -385,7 +385,7 @@
                     <assembleDirectory>target</assembleDirectory>
                     <programs>
                         <program>
-                            <mainClass>org.dase.util.wikipedia.Hierarchy</mainClass>
+                            <mainClass>org.dase.iecii.interactive.launcher.AppServer</mainClass>
                             <name>webapp</name>
                         </program>
                     </programs>

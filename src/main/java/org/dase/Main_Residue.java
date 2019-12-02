@@ -7,7 +7,7 @@ import org.dase.ecii.datastructure.CandidateClass;
 import org.dase.ecii.datastructure.CandidateSolution;
 import org.dase.ecii.exceptions.MalFormedIRIException;
 import org.dase.ecii.ontofactory.DLSyntaxRendererExt;
-import org.dase.parser.dl_syntax_owlapi.DLSyntaxParser;
+import org.dase.iecii.parser.dl_syntax_owlapi.DLSyntaxParser;
 import org.dase.ecii.util.ConfigParams;
 import org.dase.ecii.util.Monitor;
 import org.dase.ecii.util.Utility;

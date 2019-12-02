@@ -11,9 +11,9 @@
 <%--import org.dase.ecii.exceptions.MalFormedIRIException;--%>
 <%--import org.dase.ecii.ontofactory.DLSyntaxRendererExt;--%>
 <%--import org.dase.parser.DLSyntaxParser;--%>
-<%--import org.dase.util.ConfigParams;--%>
-<%--import org.dase.util.Monitor;--%>
-<%--import org.dase.util.Utility;--%>
+<%--import org.dase.ieciiutil.ConfigParams;--%>
+<%--import org.dase.ieciiutil.Monitor;--%>
+<%--import org.dase.ieciiutil.Utility;--%>
 <%--import org.semanticweb.owlapi.apibinding.OWLManager;--%>
 <%--import org.semanticweb.owlapi.model.*;--%>
 <%--import org.semanticweb.owlapi.reasoner.OWLReasoner;--%>
