@@ -1,0 +1,38 @@
+1.  String str = "River and ∃ imageContains.Trees  ⊔ ¬AnatomicalStructure ⊔ ¬Region";
+ObjectUnionOf(ObjectIntersectionOf(<#River> ObjectSomeValuesFrom(<#imageContains> <#Trees>)) ObjectComplementOf(<#AnatomicalStructure>) ObjectComplementOf(<#Region>))
+
+
+2. String str = "River and ∃ imageContains.Trees  ⊔ ¬AnatomicalStructure ⊔ ¬Region and ∃ imageContains.Animal";
+ObjectUnionOf(ObjectIntersectionOf(<#River> ObjectSomeValuesFrom(<#imageContains> <#Trees>)) ObjectIntersectionOf(ObjectComplementOf(<#Region>) ObjectSomeValuesFrom(<#imageContains> <#Animal>)) ObjectComplementOf(<#AnatomicalStructure>))
+
+
+3.  String str = "River and ∃ imageContains.(Trees  ⊔ ¬AnatomicalStructure ⊔ ¬Region)";
+ObjectIntersectionOf(<#River> ObjectSomeValuesFrom(<#imageContains> ObjectUnionOf(<#Trees> ObjectComplementOf(<#AnatomicalStructure>) ObjectComplementOf(<#Region>))))
+
+
+
+
+2. String str = "River and ∃ imageContains.(Trees  ⊔ ¬AnatomicalStructure ⊔ ¬Region) and ∃ imageContains.Animal";
+ObjectIntersectionOf(<#River> ObjectSomeValuesFrom(<#imageContains> <#Animal>) ObjectSomeValuesFrom(<#imageContains> ObjectUnionOf(<#Trees> ObjectComplementOf(<#AnatomicalStructure>) ObjectComplementOf(<#Region>))))
+
+
+5. String str = Trees or River
+ObjectUnionOf(<#River> <#Trees>)
+
+6. String str= Trees
+<#Trees>
+
+
+
+OWLClassExpression Or():
+{
+    OWLClassExpression desc;
+    Set<OWLClassExpression> operands = new HashSet<OWLClassExpression>();
+}
+{
+    (desc=And(){operands.add(desc);} (<OR> desc=And(){operands.add(desc);})*)
+    {
+        if(operands.size() == 1) { return desc; }
+        return factory.getOWLObjectUnionOf(operands);
+    }
+}

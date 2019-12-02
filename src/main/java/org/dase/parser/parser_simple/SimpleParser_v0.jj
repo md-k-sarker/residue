@@ -1,0 +1,238 @@
+options {
+    STATIC=false;
+    JAVA_UNICODE_ESCAPE=true;
+    //LOOKAHEAD=2; 
+    JAVA_TEMPLATE_TYPE = "modern";
+    EXCEPTIONS_SUPER_CLASS = "org.semanticweb.owlapi.io.OWLParserException";
+    SUPPORT_CLASS_VISIBILITY_PUBLIC=false;
+    //DEBUG_PARSER=true;
+    //DEBUG_TOKEN_MANAGER=true;
+}
+
+PARSER_BEGIN(SimpleParser_v0)
+
+/* This file is part of the OWL API.
+ * The contents of this file are subject to the LGPL License, Version 3.0.
+ * Copyright 2014, The University of Manchester
+ * 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program.  If not, see http://www.gnu.org/licenses/.
+ *
+ * Alternatively, the contents of this file may be used under the terms of the Apache License, Version 2.0 in which case, the provisions of the Apache License Version 2.0 are applicable instead of those above.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. */
+
+package org.dase.parser.parser_simple;
+
+import java.util.Set;
+import java.util.HashSet;
+import java.util.*;
+
+import org.dase.ecii.datastructure.CandidateClass;
+import org.dase.ecii.datastructure.CandidateSolution;
+import org.dase.ecii.datastructure.ConjunctiveHornClause;
+import org.dase.parser.parser_simple.JavaCharStream;
+import org.dase.parser.parser_simple.ParseException;
+import org.dase.parser.parser_simple.SimpleParserConstants;
+import org.dase.parser.parser_simple.SimpleParserTokenManager;
+import org.dase.parser.parser_simple.Token;
+import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
+import org.semanticweb.owlapi.util.*;
+
+import org.semanticweb.owlapi.model.*;
+
+@SuppressWarnings("all")
+public class SimpleParser_v0 {
+    private String defaultNamespace = IRI.create("http://www.semanticweb.org/ontologies/Ontology").toString();
+    private Map<String, String> namespaceMap = new HashMap<String, String>();
+    private OWLDataFactory factory;
+    private Map<String, IRI> iriMap = new HashMap<String, IRI>();
+    private Map<String, IRI> qnameIRIMap = new HashMap<String, IRI>();
+    private Set<OWLAxiom> axioms = new LinkedHashSet<OWLAxiom>();
+    private int a;
+
+    public void setOWLDataFactory(OWLDataFactory factory) {
+        this.factory = factory;
+    }
+
+    public void setPrefixMapping(String prefix, String namespace) {
+        namespaceMap.put(prefix, namespace);
+    }
+
+    public void setDefaultNamespace(String ns) {
+        defaultNamespace = ns;
+    }
+
+    public IRI getIRI(String val) {
+        IRI iri = iriMap.get(val);
+        if(iri == null) {
+            iri = IRI.create(val);
+            iriMap.put(val, iri);
+        }
+        return iri;
+    }
+
+    public IRI getIRIFromId(String qname) {
+        if(qname.equals("top") || qname.equals("\u22A4")) {
+            return OWLRDFVocabulary.OWL_THING.getIRI();
+        }
+        if(qname.equals("bottom") || qname.equals("\u22A5")) {
+            return OWLRDFVocabulary.OWL_NOTHING.getIRI();
+        }
+        IRI iri = qnameIRIMap.get(qname);
+        if(iri == null) {
+            iri = getIRI(defaultNamespace + "#" + qname);
+            qnameIRIMap.put(qname, iri);
+        }
+        return iri;
+    }
+    private void addAxiom(OWLAxiom ax) {
+        if (ax == null) {
+          return;
+        }
+        axioms.add(ax);
+    }
+}
+
+PARSER_END(SimpleParser_v0)
+
+// We skip over any white space
+SKIP: {" " | "\r" | "\t"}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+TOKEN: { <SUBCLASSOF: ("\u2291" | "->" | "sub" | "\\sqsubseteq")> }
+TOKEN: { <EQUIVALENTTO: ("\u2261" | "==" | "\\equiv")> }
+TOKEN: { <NEQ: ("\u2260" | "!=" | "\\not=")> }
+TOKEN: { <COMPOSE: "o" | "\u2218" > }
+TOKEN: { <DOT: "."> }
+TOKEN: { <INVERSE: "\u207B" | "^-"> }
+TOKEN: { <OPENPAR: "("> }
+TOKEN: { <CLOSEPAR: ")"> }
+TOKEN: { <OPENSQPAR: "["> }
+TOKEN: { <CLOSESQPAR: "]"> }
+TOKEN: { <OPENBRACE: "{"> }
+TOKEN: { <CLOSEBRACE: "}"> }
+TOKEN: { <COLON: ":"> }
+TOKEN: { <AND: ("\u2293" | "and" | "\\sqcap")> }
+TOKEN: { <OR: ("\u2294" | "or" | "\\sqcup")> }
+TOKEN: { <NOT: ("\u00AC" | "not" | "\\lnot")> }
+TOKEN: { <SOME: ("\u2203" | "exists" | "\\exists")> }
+TOKEN: { <ALL: ("\u2200" | "forall" | "\\forall")> }
+TOKEN: { <MIN: ("\u2265" | ">" | "\\geq")> }
+TOKEN: { <MAX: ("\u2264" | "<" | "\\leq")> }
+TOKEN: { <EXACT: ("=" | "equal")> }
+TOKEN: { <IN: ("in" | "\u2208")> }
+TOKEN: { <TRANSITIVEROLES: ("trans" | "transitive" | "R\u207A")> }
+TOKEN: { <INT: (["0"-"9"])+> }
+TOKEN: { <DOUBLE: (<INT>)+<DOT>(<INT>)*> }
+TOKEN: { <ID: ((~[" ", "\n", "\t", "(", ")", "[", "]", "{", "}", ",", "^", "=", "<", ">", ".", "\u207B", "\u00AC", "\u2208"]))+> }
+
+
+CandidateSolution parseCandidateSolution() :
+{ CandidateSolution candidateSolution = new CandidateSolution();
+    CandidateClass candidateClass;
+ }
+{    (candidateClass = parseCandidateClass() {candidateSolution.addCandidateClass(candidateClass);} )
+    (<AND> candidateClass = parseCandidateClass() { candidateSolution.addCandidateClass(candidateClass); } )*
+     <EOF>
+    { return candidateSolution; }
+}
+
+CandidateClass parseCandidateClass() :
+{ CandidateClass candidateClass = null;
+    OWLObjectProperty owlObjectProperty = null;
+    ConjunctiveHornClause conjunctiveHornClause;
+}
+{   ( <SOME> owlObjectProperty = parseObjectPropertyId() <DOT> {candidateClass = new CandidateClass(owlObjectProperty);})?
+    (conjunctiveHornClause = parseConjunctiveHornClause(owlObjectProperty)
+    {
+        if(null == candidateClass){
+            candidateClass = new CandidateClass(owlObjectProperty);
+        }
+        candidateClass.addConjunctiveHornClauses(conjunctiveHornClause);
+    }) // we will have at-least one of this one and possibly couple of this one * is be best one.
+
+    { return candidateClass; }
+}
+
+ConjunctiveHornClause parseConjunctiveHornClause(OWLObjectProperty owlObjectProperty) :
+{ ConjunctiveHornClause hornClause = new ConjunctiveHornClause(owlObjectProperty);
+    OWLClass posClass_;
+    OWLClassExpression posClass;
+    OWLClass negClass_;
+    OWLClassExpression negClass;
+}
+{
+    ((posClass_ = parseClassId() (<AND>)?
+        {
+            posClass = (OWLClassExpression) posClass_;
+            hornClause.setPosObjectType(posClass);
+        }
+    )?
+    (  <NOT> (<OPENPAR>)? (negClass_ = parseClassId()
+        {
+    negClass = (OWLClassExpression) negClass_;
+    hornClause.addNegObjectType(negClass);
+})? (<OR> negClass_ = parseClassId()
+        {
+            negClass = (OWLClassExpression) negClass_;
+            hornClause.addNegObjectTypes(negClass);
+        })* (<CLOSEPAR> )?
+    )*
+    )
+  { return hornClause; }
+}
+
+
+ArrayList<OWLClassExpression> parseNegClasses(OWLObjectProperty owlObjectProperty) :
+{ ConjunctiveHornClause hornClause = new ConjunctiveHornClause(owlObjectProperty);
+    OWLClass posClass_;
+    OWLClassExpression posClass;
+    OWLClass negClass_;
+    OWLClassExpression negClass;
+}
+{
+    ((posClass_ = parseClassId() (<AND>)?
+        {
+            posClass = (OWLClassExpression) posClass_;
+            hornClause.setPosObjectType(posClass);
+        }
+    )?
+    (  <NOT> (<OPENPAR>)? (negClass_ = parseClassId()
+        {
+            negClass = (OWLClassExpression) negClass_;
+            hornClause.addNegObjectTypes(negClass);
+        })? (<OR> negClass_ = parseClassId()
+        {
+            negClass = (OWLClassExpression) negClass_;
+            hornClause.addNegObjectTypes(negClass);
+        })* (<CLOSEPAR> )?
+    )*
+    )
+  { return hornClause; }
+}
+
+
+OWLObjectProperty parseObjectPropertyId():
+{
+    IRI iri;
+    boolean inverse = false;
+}
+{
+    iri=parseId() { return factory.getOWLObjectProperty(iri); }
+}
+
+
+OWLClass parseClassId():
+{ IRI iri; }
+{ iri=parseId() { return factory.getOWLClass(iri); } }
+
+
+
+
+IRI parseId() :
+{ Token t; }
+{ t=<ID> { return getIRIFromId(t.image); } }
