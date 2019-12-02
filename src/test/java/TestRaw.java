@@ -3,7 +3,7 @@ Written by sarker.
 Written at 9/26/19.
 */
 
-import org.dase.util.Utility;
+import org.dase.ecii.util.Utility;
 import org.semanticweb.owlapi.model.*;
 
 import java.io.IOException;

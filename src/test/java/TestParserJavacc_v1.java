@@ -5,12 +5,12 @@ Written at 9/26/19.
 
 import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
 import org.apache.log4j.Level;
-import org.dase.core.SharedDataHolder;
-import org.dase.datastructure.CandidateSolutionV1;
+import org.dase.ecii.core.SharedDataHolder;
+import org.dase.ecii.datastructure.CandidateSolutionV1;
 import org.dase.parser.dl_syntax_owlapi.DLSyntaxParser;
 import org.dase.parser.javacc.SimpleParserJavacc_v1;
 import org.dase.parser.javacc.SimpleParserJavacc_v1;
-import org.dase.util.Utility;
+import org.dase.ecii.util.Utility;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;

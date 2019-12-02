@@ -5,6 +5,8 @@ Written at 5/22/18.
 */
 
 import org.apache.commons.logging.impl.Log4JLogger;
+import org.dase.ecii.util.Monitor;
+import org.dase.ecii.util.Utility;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.slf4j.Logger;

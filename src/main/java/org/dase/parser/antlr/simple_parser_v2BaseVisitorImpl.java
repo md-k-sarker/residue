@@ -2,8 +2,8 @@
 
 package org.dase.parser.antlr;
 
-import org.dase.datastructure.CandidateClassV1;
-import org.dase.datastructure.CandidateSolutionV1;
+import org.dase.ecii.datastructure.CandidateClassV1;
+import org.dase.ecii.datastructure.CandidateSolutionV1;
 import org.semanticweb.owlapi.model.*;
 
 import java.util.ArrayList;
@@ -11,8 +11,8 @@ import java.util.HashMap;
 
 import java.util.*;
 
-import org.dase.core.SharedDataHolder;
-import org.dase.datastructure.ConjunctiveHornClauseV1;
+import org.dase.ecii.core.SharedDataHolder;
+import org.dase.ecii.datastructure.ConjunctiveHornClauseV1;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 

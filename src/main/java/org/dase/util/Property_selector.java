@@ -4,6 +4,7 @@ Written by sarker.
 Written at 9/18/19.
 */
 
+import org.dase.ecii.util.Utility;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
 

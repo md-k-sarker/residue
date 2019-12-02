@@ -10,7 +10,7 @@
 
     <properties>
         <finalAppName>${artifactId}</finalAppName>
-
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <antlr.version>4.7.2</antlr.version>
         <jdk.source.version>1.8</jdk.source.version>
         <jdk.target.version>1.8</jdk.target.version>
@@ -401,11 +401,11 @@
             </plugin>
 
             <!-- to compile antlr files before java files -->
-            <plugin>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-maven-plugin</artifactId>
-                <version>${antlr.version}</version>
-                <executions>
+<!--            <plugin>-->
+<!--                <groupId>org.antlr</groupId>-->
+<!--                <artifactId>antlr4-maven-plugin</artifactId>-->
+<!--                <version>${antlr.version}</version>-->
+<!--                <executions>-->
 <!--                    <execution>-->
 <!--                        <goals>-->
 <!--                            <goal>antlr4</goal>-->
@@ -414,8 +414,8 @@
 <!--                            <visitor>true</visitor>-->
 <!--                        </configuration>-->
 <!--                    </execution>-->
-                </executions>
-            </plugin>
+<!--                </executions>-->
+<!--            </plugin>-->
 
         </plugins>
 

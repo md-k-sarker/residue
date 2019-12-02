@@ -2,13 +2,13 @@ package org.dase;
 
 
 import org.apache.log4j.PropertyConfigurator;
-import org.dase.core.SharedDataHolder;
-import org.dase.core.CandidateSolutionFinder;
-import org.dase.core.SharedDataHolder;
-import org.dase.exceptions.MalFormedIRIException;
-import org.dase.ontofactory.DLSyntaxRendererExt;
-import org.dase.exceptions.MalFormedIRIException;
-import org.dase.util.*;
+import org.dase.ecii.core.SharedDataHolder;
+import org.dase.ecii.core.CandidateSolutionFinder;
+import org.dase.ecii.core.SharedDataHolder;
+import org.dase.ecii.exceptions.MalFormedIRIException;
+import org.dase.ecii.ontofactory.DLSyntaxRendererExt;
+import org.dase.ecii.exceptions.MalFormedIRIException;
+import org.dase.ecii.util.*;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;

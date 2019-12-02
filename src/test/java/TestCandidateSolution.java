@@ -3,9 +3,9 @@ Written by sarker.
 Written at 10/6/19.
 */
 
-import org.dase.datastructure.CandidateClass;
-import org.dase.datastructure.CandidateSolution;
-import org.dase.datastructure.ConjunctiveHornClause;
+import org.dase.ecii.datastructure.CandidateClass;
+import org.dase.ecii.datastructure.CandidateSolution;
+import org.dase.ecii.datastructure.ConjunctiveHornClause;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 

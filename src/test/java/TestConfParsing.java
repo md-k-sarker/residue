@@ -3,9 +3,9 @@ Written by sarker.
 Written at 7/30/18.
 */
 
-import org.dase.core.SharedDataHolder;
-import org.dase.exceptions.MalFormedIRIException;
-import org.dase.util.Utility;
+import org.dase.ecii.core.SharedDataHolder;
+import org.dase.ecii.exceptions.MalFormedIRIException;
+import org.dase.ecii.util.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

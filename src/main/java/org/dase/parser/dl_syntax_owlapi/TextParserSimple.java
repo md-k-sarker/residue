@@ -4,10 +4,10 @@ Written by sarker.
 Written at 10/3/19.
 */
 
-import org.dase.core.SharedDataHolder;
-import org.dase.datastructure.CandidateClass;
-import org.dase.datastructure.CandidateSolution;
-import org.dase.datastructure.ConjunctiveHornClause;
+import org.dase.ecii.core.SharedDataHolder;
+import org.dase.ecii.datastructure.CandidateClass;
+import org.dase.ecii.datastructure.CandidateSolution;
+import org.dase.ecii.datastructure.ConjunctiveHornClause;
 import org.semanticweb.owlapi.model.OWLDocumentFormat;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 

@@ -6,7 +6,7 @@ Written at 11/14/19.
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.PropertyConfigurator;
-import org.dase.util.Utility;
+import org.dase.ecii.util.Utility;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

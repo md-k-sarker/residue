@@ -3,8 +3,8 @@ Written by sarker.
 Written at 5/18/18.
 */
 
-import org.dase.ontofactory.DLSyntaxRendererExt;
-import org.dase.util.ConfigParams;
+import org.dase.ecii.ontofactory.DLSyntaxRendererExt;
+import org.dase.ecii.util.ConfigParams;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 

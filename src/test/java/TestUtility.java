@@ -3,7 +3,7 @@ Written by sarker.
 Written at 8/12/18.
 */
 
-import org.dase.util.Utility;
+import org.dase.ecii.util.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,16 +1,16 @@
 package org.dase;
 
 
-import org.dase.core.CandidateSolutionFinder;
-import org.dase.core.SharedDataHolder;
-import org.dase.datastructure.CandidateClass;
-import org.dase.datastructure.CandidateSolution;
-import org.dase.exceptions.MalFormedIRIException;
-import org.dase.ontofactory.DLSyntaxRendererExt;
+import org.dase.ecii.core.CandidateSolutionFinder;
+import org.dase.ecii.core.SharedDataHolder;
+import org.dase.ecii.datastructure.CandidateClass;
+import org.dase.ecii.datastructure.CandidateSolution;
+import org.dase.ecii.exceptions.MalFormedIRIException;
+import org.dase.ecii.ontofactory.DLSyntaxRendererExt;
 import org.dase.parser.dl_syntax_owlapi.DLSyntaxParser;
-import org.dase.util.ConfigParams;
-import org.dase.util.Monitor;
-import org.dase.util.Utility;
+import org.dase.ecii.util.ConfigParams;
+import org.dase.ecii.util.Monitor;
+import org.dase.ecii.util.Utility;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
