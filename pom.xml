@@ -49,13 +49,13 @@
             <systemPath>${project.basedir}/src/main/resources/ecii.jar</systemPath>
         </dependency>
 
-        <dependency>
-            <groupId>org.dase</groupId>
-            <artifactId>ecii</artifactId>
-            <version>1.0.0-beta</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/resources/Interactive-ECII.jar</systemPath>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.dase</groupId>-->
+<!--            <artifactId>ecii</artifactId>-->
+<!--            <version>1.0.0-beta</version>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/src/main/resources/Interactive-ECII.jar</systemPath>-->
+<!--        </dependency>-->
 
 
 

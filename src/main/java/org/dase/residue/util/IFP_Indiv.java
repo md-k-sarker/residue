@@ -20,6 +20,12 @@ public class IFP_Indiv {
     String csvPath = "/Users/sarker/Workspaces/Jetbrains/residue/data/RCTA_IFP/RCTA_IFP_data_hfcD_with_POS_keywords_v4.csv";
 
 //    int questionCounter = 0;
+
+    /**
+     * Create Individuals from the IFP ids
+     * @throws OWLOntologyCreationException
+     * @throws OWLOntologyStorageException
+     */
     public void process_csv() throws OWLOntologyCreationException, OWLOntologyStorageException {
         owlOntologyManager = OWLManager.createOWLOntologyManager();
         owlOntology = owlOntologyManager.createOntology(IRI.create("http://www.daselab.com/residue/analysis"));

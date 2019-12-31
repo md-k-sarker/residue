@@ -2,6 +2,7 @@ package org.dase;
 
 
 import org.apache.log4j.PropertyConfigurator;
+import org.dase.ecii.core.CandidateSolutionFinderV1;
 import org.dase.ecii.core.SharedDataHolder;
 import org.dase.ecii.core.CandidateSolutionFinder;
 import org.dase.ecii.core.SharedDataHolder;
@@ -126,7 +127,7 @@ public class Main_ECII {
             logger.info("Program started................");
             doOps();
 
-            monitor.displayMessage("Result saved at: "+ ConfigParams.outputResultPath, true);
+            monitor.displayMessage("Result saved at: " + ConfigParams.outputResultPath, true);
             monitor.stop(System.lineSeparator() + "Program finished.", true);
             logger.info("Program finished.");
 
@@ -194,7 +195,7 @@ public class Main_ECII {
         });
 
         // Create a new ConceptFinder object with the given reasoner.
-        CandidateSolutionFinder findConceptsObj = new CandidateSolutionFinder(owlReasoner, ontology, outPutStream, monitor);
+        CandidateSolutionFinderV1 findConceptsObj = new CandidateSolutionFinderV1(owlReasoner, ontology, outPutStream, monitor);
 //        ConceptFinderComplex findConceptsObj = new ConceptFinderComplex(owlReasoner, ontology, outPutStream, monitor);
 
         logger.info("finding solutions started...............");
@@ -209,7 +210,7 @@ public class Main_ECII {
         logger.info("sorting solutions finished.");
 
         logger.info("calculating accuracy using reasoner for top k6 solutions................");
-        int K6 = 0;
+        int K6 = 6;
         findConceptsObj.calculateAccuracyOfTopK6ByReasoner(K6);
         logger.info("calculating accuracy using reasoner for top k6 solutions................");
 
@@ -306,20 +307,12 @@ public class Main_ECII {
 
         PropertyConfigurator.configure("/Users/sarker/Workspaces/Jetbrains/residue/java/residue_java_v1/src/main/resources/log4j.properties");
 
-        StringBuilder sb = new StringBuilder();
-        for (String arg : args) {
-            sb.append(arg);
-        }
-        String argErrorStr1 = "Given parameter: ";
-        String argErrorStr2 = " is not in correct format.";
 
         SharedDataHolder.programStartingDir = System.getProperty("user.dir");
         logger.info("Working directory/Program starting directory = " + SharedDataHolder.programStartingDir);
-
         logger.debug("args.length: " + args.length);
 
-        String config_path = "/Users/sarker/Workspaces/Jetbrains/residue/experiments/RCTA_IFP/politics_positive_vs_economics_negative_v8.config";
-//        String config_path = "/Users/sarker/Workspaces/Jetbrains/residue/experiments/RCTA_IFP/moral_43examples_simple.config";
+        String config_path = "/Users/sarker/Workspaces/Jetbrains/residue/experiments/KG-based similarity/IFP_Categories/Experiment_2_posExamples_265/Experiment_2_posExamples_265.config";
 
         ConfigParams.batch = false;
 
@@ -327,55 +320,5 @@ public class Main_ECII {
         System.out.println("parsing okay");
         initiateSingleDoOps(ConfigParams.outputResultPath);
 
-//        if (args.length == 1) {
-//
-//            if (args[0].equals("-h")) {
-//                printHelp();
-//                return;
-//            }
-//            /**
-//             * args[0] = confFilePath
-//             */
-//            logger.debug("given program argument: " + args[0]);
-//            if (args[0].endsWith(".config")) {
-//
-//                // parse the config file
-//                ConfigParams.batch = false;
-//                ConfigParams.parseConfigParams(args[0]);
-//                initiateSingleDoOps(ConfigParams.outputResultPath);
-//            } else {
-//                System.out.println("Config file must ends with .config");
-//                printHelp();
-//            }
-//
-//        } else if (args.length == 2) {
-//            /**
-//             * args[0] = -d
-//             * args[1] = directory
-//             */
-//            if (args[0].trim().toLowerCase().equals("-b") && !args[1].trim().endsWith(".config")) {
-//                ConfigParams.batch = true;
-//                ConfigParams.batchStartingPath = args[1];
-//                // start with args[1])
-//                try {
-//                    logger.info("Running on folder: " + args[1]);
-//                    processBatchRunning(args[1]);
-//                } catch (Exception e) {
-//                    logger.info("\n\n!!!!!!!Fatal error!!!!!!!\n" + Utility.getStackTraceAsString(e));
-//                    if (null != monitor) {
-//                        monitor.stopSystem("\n\n!!!!!!!Fatal error!!!!!!!\n" + Utility.getStackTraceAsString(e), true);
-//                    } else {
-//                        System.exit(0);
-//                    }
-//                }
-//
-//            } else {
-//                System.out.println(argErrorStr1 + sb.toString() + argErrorStr2);
-//                printHelp();
-//            }
-//        } else {
-//            System.out.println(argErrorStr1 + sb.toString() + argErrorStr2);
-//            printHelp();
-//        }
     }
 }
