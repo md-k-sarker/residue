@@ -4,13 +4,9 @@ package org.dase;
 import org.apache.log4j.PropertyConfigurator;
 import org.dase.ecii.core.CandidateSolutionFinderV1;
 import org.dase.ecii.core.SharedDataHolder;
-import org.dase.ecii.core.CandidateSolutionFinder;
-import org.dase.ecii.core.SharedDataHolder;
 import org.dase.ecii.datastructure.CandidateSolutionV1;
-import org.dase.ecii.datastructure.HashMapUtility;
 import org.dase.ecii.exceptions.MalFormedIRIException;
 import org.dase.ecii.ontofactory.DLSyntaxRendererExt;
-import org.dase.ecii.exceptions.MalFormedIRIException;
 import org.dase.ecii.util.*;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
@@ -20,8 +16,6 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.io.*;
 import java.lang.invoke.MethodHandles;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.util.*;
@@ -101,7 +95,7 @@ public class Main_Residue {
 
 
     /**
-     * Initiate the outputpath, logger path, monitor etc and call doOps().
+     * Initiate the outputpath, logger path, monitor etc and call doECIIOps().
      *
      * @param outputResultPath
      */
@@ -117,7 +111,10 @@ public class Main_Residue {
             monitor = new Monitor(outPutStream, jTextPane);
             monitor.start("Program started.............", true);
             logger.info("Program started................");
-            doOps();
+            doECIIOps();
+
+            // find similary
+            findSimilarity();
 
             monitor.displayMessage("Result saved at: " + ConfigParams.outputResultPath, true);
             monitor.stop(System.lineSeparator() + "Program finished.", true);
@@ -134,6 +131,8 @@ public class Main_Residue {
         }
     }
 
+    static Long algoStartTime;
+    static Long algoEndTime;
 
     /**
      * Start the single induction process.
@@ -141,7 +140,7 @@ public class Main_Residue {
      * @throws OWLOntologyCreationException
      * @throws IOException
      */
-    private static void doOps() throws OWLOntologyCreationException, IOException, MalFormedIRIException {
+    private static void doECIIOps() throws OWLOntologyCreationException, IOException, MalFormedIRIException {
 
         logger.info("Working with confFile: " + ConfigParams.confFilePath);
         monitor.writeMessage("Working with confFile: " + Paths.get(ConfigParams.confFilePath).getFileName());
@@ -154,7 +153,7 @@ public class Main_Residue {
 
         // algorithm starting time here.
         DateFormat dateFormat = Utility.getDateTimeFormat();
-        Long algoStartTime = System.currentTimeMillis();
+         algoStartTime = System.currentTimeMillis();
         monitor.displayMessage("Algorithm starts at: " + dateFormat.format(new Date()), true);
 
         // initiate reasoner
@@ -206,7 +205,7 @@ public class Main_Residue {
         findConceptsObj.calculateAccuracyOfTopK6ByReasoner(K6);
         logger.info("calculating accuracy using reasoner for top k6 solutions................");
 
-        Long algoEndTime = System.currentTimeMillis();
+         algoEndTime = System.currentTimeMillis();
         monitor.displayMessage("\nAlgorithm ends at: " + dateFormat.format(new Date()), true);
         logger.info("Algorithm ends at: " + dateFormat.format(new Date()), true);
         monitor.displayMessage("\nAlgorithm duration: " + (algoEndTime - algoStartTime) / 1000.0 + " sec", true);
@@ -267,6 +266,7 @@ public class Main_Residue {
         logger.info("Finding similarity started...............");
         String ifps_path = "/Users/sarker/Workspaces/Jetbrains/residue/experiments/KG-based similarity/IFP_Categories/ifps_to_compare.txt";
 
+        monitor.displayMessage("\nFinding similarity of IFP's ", true);
         FileReader fileReader = new FileReader(ifps_path);
         BufferedReader bf = new BufferedReader(fileReader);
 
@@ -285,52 +285,68 @@ public class Main_Residue {
                 max_precision = candidateSolutionV1.getScore().getPrecision();
             }
         }
+        monitor.displayMessage("\nMaximum precision of solutions: "+ max_precision, true);
+        ArrayList<CandidateSolutionV1> solutions_with_max_accuracy = new ArrayList<>(
+                SharedDataHolder.SortedCandidateSolutionSetV1.stream().filter(
+                        candidateSolutionV1 -> candidateSolutionV1.getScore().getPrecision() == max_precision).collect(Collectors.toList()));
 
-        ArrayList<CandidateSolutionV1> solutions_with_max_accuracy = new ArrayList<>(SharedDataHolder.SortedCandidateSolutionSetV1.stream().filter(candidateSolutionV1 -> candidateSolutionV1.getScore().getPrecision() == max_precision).collect(Collectors.toList()));
+        monitor.displayMessage("\nTotal solutions with precision "+ max_precision + " "+ solutions_with_max_accuracy.size(), true);
+
+        double accuracy_total_for_all_indiv = 0;
+        double accuracy_avg_for_all_indiv = 0;
+
+        if (owlNamedIndividualHashSet.size() <= 0)
+            return;
+
+        logger.info("Caching of subsumed Indivs started...........");
+        // cache the subsumed individuals
+        HashMap<CandidateSolutionV1,HashSet<OWLNamedIndividual>> subsumedIndivsCache = new HashMap<>();
+        for (CandidateSolutionV1 candidateSolutionV1 : solutions_with_max_accuracy){
+            HashSet<OWLNamedIndividual> subsumedIndivs = new HashSet<>(owlReasoner.getInstances(
+                    candidateSolutionV1.getSolutionAsOWLClassExpression(), false).getFlattened());
+            subsumedIndivsCache.put(candidateSolutionV1,subsumedIndivs);
+        }
+        logger.info("Caching of subsumed Indivs finished");
+        monitor.displayMessage("Total IFP: " + owlNamedIndividualHashSet.size(), true);
 
         for (OWLNamedIndividual individual : owlNamedIndividualHashSet) {
-
-//            HashSet<OWLClass> targetTypes = new HashSet<>();
-//            for (Map.Entry<OWLObjectProperty, Double> entry : SharedDataHolder.objProperties.entrySet()) {
-//                logger.debug("Extracting objectTypes using objectProperty: " + Utility.getShortName(entry.getKey()));
-//                targetTypes = extractObjectTypes(individual, entry.getKey());
-//            }
-
-            logger.info("started looking subsumed.........");
-            double accuracy_total = 0;
-            double similarity = 0;
+            logger.debug("started looking subsumed for individual: " + individual.getIRI());
+            double accuracy_total_for_single_indiv = 0;
+            double accuracy_avg_for_single_indiv = 0;
             for (CandidateSolutionV1 candidateSolutionV1 : solutions_with_max_accuracy) {
-                logger.info("started looking subsumed for " + candidateSolutionV1.getSolutionAsString(true));
-                boolean contained = false;
-//                for (OWLClass owlClass : targetTypes) {
-                HashSet<OWLNamedIndividual> containedIndivs = new HashSet<>(owlReasoner.getInstances(
-                        candidateSolutionV1.getSolutionAsOWLClassExpression(), false).getFlattened());
-//                logger.info("total invivs subsumed: " + containedIndivs.size());
-//                containedIndivs.forEach(owlNamedIndividual -> {
-//                    logger.info("sumsumed: " + owlNamedIndividual);
-//                });
-                if (containedIndivs.contains(individual)) {
-                    contained = true;
-                } else {
-                    contained = false;
-                    break;
-                }
-//                }
-                if (contained) {
-                    logger.info("Found a matching type");
-                    accuracy_total += candidateSolutionV1.getScore().getPrecision();
-                }
-            }
-            logger.info("accuracy_total: " + accuracy_total);
-            similarity = accuracy_total / SharedDataHolder.SortedCandidateSolutionSetV1.size();
+                logger.debug("started looking subsumed by candidate solution: " + candidateSolutionV1.getSolutionAsString(true));
 
-            logger.info("similarity: " + similarity);
-            if (accuracy_total > 0)
-                break;
+                if(subsumedIndivsCache.get(candidateSolutionV1).contains(individual) ){
+                    logger.debug(Utility.getShortNameWithPrefix(individual) +
+                            " is subsumed by solution " + candidateSolutionV1.getSolutionAsString(true));
+                    accuracy_total_for_single_indiv += candidateSolutionV1.getScore().getPrecision();
+                }
+
+//                HashSet<OWLNamedIndividual> subsumedIndivs = new HashSet<>(owlReasoner.getInstances(
+//                        candidateSolutionV1.getSolutionAsOWLClassExpression(), false).getFlattened());
+
+//                if (subsumedIndivs.contains(individual)) {
+//                    logger.debug(Utility.getShortNameWithPrefix(individual) +
+//                            " is subsumed by solution " + candidateSolutionV1.getSolutionAsString(true));
+//                    accuracy_total_for_single_indiv += candidateSolutionV1.getScore().getPrecision();
+//                } else {
+//                }
+            }
+            logger.debug("accuracy_total_for_single_indiv: " + accuracy_total_for_single_indiv);
+            accuracy_avg_for_single_indiv = accuracy_total_for_single_indiv / SharedDataHolder.SortedCandidateSolutionSetV1.size();
+            logger.debug("accuracy_avg_for_single_indiv: " + accuracy_avg_for_single_indiv);
+
+            accuracy_total_for_all_indiv += accuracy_avg_for_single_indiv;
+            logger.debug("started looking subsumed for individual " + individual.getIRI() + " finished ");
+
+            monitor.displayMessage(" Similarity score of IFP " + Utility.getShortName(individual) + " : " + accuracy_avg_for_single_indiv, true);
         }
 
+        accuracy_avg_for_all_indiv = accuracy_total_for_all_indiv / owlNamedIndividualHashSet.size();
+        monitor.displayMessage("\nSimilarity score of all IFPs : " + accuracy_avg_for_all_indiv, true);
 
-//        System.out.println(bf.readLine().split(",")[0]);
+        logger.info("Finding similarity finished");
+        monitor.displayMessage("Finding similarity finished. ", true);
     }
 
 
@@ -391,6 +407,5 @@ public class Main_Residue {
         ConfigParams.parseConfigParams(config_path);
         System.out.println("parsing okay");
         initiateSingleDoOps(ConfigParams.outputResultPath);
-        findSimilarity();
     }
 }
