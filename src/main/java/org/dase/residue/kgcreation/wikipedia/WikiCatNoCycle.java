@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.dase.ecii.util.Utility;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.formats.OWLXMLDocumentFormat;
-import org.semanticweb.owlapi.formats.TurtleDocumentFormat;
+//import org.semanticweb.owlapi.formats.TurtleDocumentFormat;
 import org.semanticweb.owlapi.model.*;
 
 import java.sql.*;
@@ -34,7 +34,7 @@ public class WikiCatNoCycle {
     private HashMap<Long, HashSet<String>> catIdToParentsCat = new HashMap<>();
 
     private OWLOntology owlOntology;
-    private TurtleDocumentFormat turtleDocumentFormat;
+//    private TurtleDocumentFormat turtleDocumentFormat;
     private OWLXMLDocumentFormat owlxmlDocumentFormat;
     private OWLDataFactory owlDataFactory;
     private OWLOntologyManager owlOntologyManager;
@@ -257,7 +257,7 @@ public class WikiCatNoCycle {
         String finalPathToSave = pathToSave + counter + ".ttl";
         System.out.println("\nSaving to " + finalPathToSave + " started...........");
         try {
-            Utility.saveOntology(owlOntology, turtleDocumentFormat, finalPathToSave);
+            Utility.saveOntology(owlOntology, owlxmlDocumentFormat, finalPathToSave);
         } catch (OWLOntologyStorageException e) {
             e.printStackTrace();
         }
@@ -272,7 +272,7 @@ public class WikiCatNoCycle {
             e.printStackTrace();
         }
         owlDataFactory = owlOntologyManager.getOWLDataFactory();
-        turtleDocumentFormat = new TurtleDocumentFormat();
+//        turtleDocumentFormat = new TurtleDocumentFormat();
         owlxmlDocumentFormat = new OWLXMLDocumentFormat();
         try {
             System.out.println("connecting to db................ ");

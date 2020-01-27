@@ -3,15 +3,15 @@ Written by sarker.
 Written at 1/25/20.
 */
 
-import org.dase.residue.kgcreation.wikipedia.WikiCat;
+import org.dase.residue.kgcreation.wikipedia.WikiCatsCyclic;
 
 public class TestWikiCat {
 
     public void testBeautifyName() {
-        WikiCat wikiCat = new WikiCat();
+        WikiCatsCyclic wikiCatsCyclic = new WikiCatsCyclic();
         String testStr = " <>&;#,(){}!@#$%^&*()-{}`~[]<>;,.? Zam\\||a/n{}[]&&(){} `~!@#$%^&*()-{}[]|;'\"<>,.?+=";
-        System.out.println(wikiCat.beautifyName(testStr));
-//        assert "Zaman".equals(wikiCat.beautifyName(testStr));
+        System.out.println(wikiCatsCyclic.beautifyName(testStr));
+//        assert "Zaman".equals(wikiCatsCyclic.beautifyName(testStr));
     }
 
     public static void main(String [] args) {

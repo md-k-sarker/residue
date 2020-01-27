@@ -47,11 +47,6 @@ public class WikiKGStats {
         }
     }
 
-    public void traverseOntoBFS() {
-        if (null != owlReasoner) {
-//            owlReasoner.getTopClassNode()
-        }
-    }
 
     public void initOnto() {
         try {
@@ -75,17 +70,17 @@ public class WikiKGStats {
         final long intiOntoEndTime = System.currentTimeMillis();
         System.out.println("Init ontology time: " + (intiOntoEndTime - intiOntoStartTime) / 60000 + " minutes");
 
-        final long reasoningStartTime = System.currentTimeMillis();
-        wikiKGStats.doReasoning();
-        final long reasoningEndTime = System.currentTimeMillis();
-        System.out.println("Reasoning time: " + (reasoningEndTime - reasoningStartTime) / 60000 + " minutes");
+        wikiKGStats.calcStats();
 
-        final long findRootStartTime = System.currentTimeMillis();
-        wikiKGStats.getRootClass();
-        final long findRootEndTime = System.currentTimeMillis();
-        System.out.println("Find root time: " + (findRootEndTime - findRootStartTime) / 60000 + " minutes");
-
-//        wikiKGStats.calcStats();
+//        final long reasoningStartTime = System.currentTimeMillis();
+//        wikiKGStats.doReasoning();
+//        final long reasoningEndTime = System.currentTimeMillis();
+//        System.out.println("Reasoning time: " + (reasoningEndTime - reasoningStartTime) / 60000 + " minutes");
+//
+//        final long findRootStartTime = System.currentTimeMillis();
+//        wikiKGStats.getRootClass();
+//        final long findRootEndTime = System.currentTimeMillis();
+//        System.out.println("Find root time: " + (findRootEndTime - findRootStartTime) / 60000 + " minutes");
 
     }
 }

@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * Process wiki category from the db dump and make the category hierarchy ontology, without breaking the cycle.
  */
-public class WikiCat {
+public class WikiCatsCyclic {
     private Connection connect = null;
     private Statement statement = null;
     private PreparedStatement preparedStatement = null;
@@ -183,7 +183,9 @@ public class WikiCat {
      * Create relations using the cached hashMap data
      */
     private void createRelations() {
-        System.out.println("\ncreate relations started................ ");
+        System.out.println("\nCreate relations started................ ");
+        System.out.println("\ncatIdToParentsCat size: " + catIdToParentsCat.size());
+        System.out.println("\npageIdToTitleMap size: "+ pageIdToTitleMap.size());
         // iterate ove the category
         for (Map.Entry<Long, HashSet<String>> longHashSetEntry : catIdToParentsCat.entrySet()) {
             // get title of the id
@@ -199,7 +201,6 @@ public class WikiCat {
                 }
             } else {
                 System.out.println("Page title not found for page_id: " + longHashSetEntry.getKey() + " skipping this category");
-
             }
             counter++;
 //            if (counter > 10)
@@ -257,21 +258,21 @@ public class WikiCat {
     }
 
     public static void main(String[] args) throws Exception {
-        WikiCat wikiCat = new WikiCat();
-        wikiCat.initData();
+        WikiCatsCyclic wikiCatsCyclic = new WikiCatsCyclic();
+        wikiCatsCyclic.initData();
 
         final long readDatabaseStartTime = System.currentTimeMillis();
-        wikiCat.readDataBase();
+        wikiCatsCyclic.readDataBase();
         final long readDatabaseEndTime = System.currentTimeMillis();
         System.out.println("Databse read+cache time: " + (readDatabaseEndTime - readDatabaseStartTime) / 60000 + " minutes");
 
         final long createRelationStartTime = System.currentTimeMillis();
-        wikiCat.createRelations();
+        wikiCatsCyclic.createRelations();
         final long createRelationEndTime = System.currentTimeMillis();
         System.out.println("Create relations time: " + (createRelationEndTime - createRelationStartTime) / 60000 + " minutes");
 
         final long saveOntologyStartTime = System.currentTimeMillis();
-        wikiCat.saveOntoToFile();
+        wikiCatsCyclic.saveOntoToFile();
         final long saveOntologyEndTime = System.currentTimeMillis();
         System.out.println("Save ontology time: " + (saveOntologyEndTime - saveOntologyStartTime) / 60000 + " minutes");
     }
