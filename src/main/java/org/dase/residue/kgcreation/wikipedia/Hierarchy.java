@@ -1,4 +1,4 @@
-package org.dase.residue.util.wikipedia;
+package org.dase.residue.kgcreation.wikipedia;
 /*
 Written by sarker.
 Written at 11/14/19.

@@ -272,7 +272,7 @@ public class Main_Residue {
 
         String[] strs = bf.readLine().split(",");
 
-        HashSet<OWLNamedIndividual> owlNamedIndividualHashSet = new HashSet<>();
+        ArrayList<OWLNamedIndividual> owlNamedIndividualHashSet = new ArrayList<>();
 
         for (String str : strs) {
             IRI iri = IRI.create(str);
@@ -339,11 +339,11 @@ public class Main_Residue {
             accuracy_total_for_all_indiv += accuracy_avg_for_single_indiv;
             logger.debug("started looking subsumed for individual " + individual.getIRI() + " finished ");
 
-            monitor.displayMessage(" Similarity score of IFP " + Utility.getShortName(individual) + " : " + accuracy_avg_for_single_indiv, true);
+            monitor.displayMessage(" Similarity score of IFP " + Utility.getShortName(individual) + " with respect to group 2: " + accuracy_avg_for_single_indiv, true);
         }
 
         accuracy_avg_for_all_indiv = accuracy_total_for_all_indiv / owlNamedIndividualHashSet.size();
-        monitor.displayMessage("\nSimilarity score of all IFPs : " + accuracy_avg_for_all_indiv, true);
+        monitor.displayMessage("\nSimilarity score of all IFPs with respect to group 2 : " + accuracy_avg_for_all_indiv, true);
 
         logger.info("Finding similarity finished");
         monitor.displayMessage("Finding similarity finished. ", true);
@@ -400,7 +400,7 @@ public class Main_Residue {
         logger.info("Working directory/Program starting directory = " + SharedDataHolder.programStartingDir);
         logger.debug("args.length: " + args.length);
 
-        String config_path = "/Users/sarker/Workspaces/Jetbrains/residue/experiments/KG-based similarity/IFP_Categories/Experiment_2_posExamples_265/Experiment_2_posExamples_265.config";
+        String config_path = "/Users/sarker/Workspaces/Jetbrains/residue/experiments/RCTA_IFP/experiment_8_ION_proposed/experiment_8_ION_proposed.config";
 
         ConfigParams.batch = false;
 
