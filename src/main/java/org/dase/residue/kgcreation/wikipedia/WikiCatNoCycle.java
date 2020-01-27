@@ -29,18 +29,19 @@ public class WikiCatNoCycle {
     private ResultSet resultSetPages = null;
     private ResultSet resultSetCat = null;
     private String rootCategoryName = "Main_topic_classifications";
+    private String rootCategoryNameIncludingAdminInfo = "Contents";
 
     private HashMap<Long, String> pageIdToTitleMap = new HashMap<>();
     private HashMap<Long, HashSet<String>> catIdToParentsCat = new HashMap<>();
 
     private OWLOntology owlOntology;
-//    private TurtleDocumentFormat turtleDocumentFormat;
+    //    private TurtleDocumentFormat turtleDocumentFormat;
     private OWLXMLDocumentFormat owlxmlDocumentFormat;
     private OWLDataFactory owlDataFactory;
     private OWLOntologyManager owlOntologyManager;
     private int counter = 0;
 
-    String pathToSave = "/Users/sarker/Workspaces/Jetbrains/residue/data/KGS/automated_kg_wiki/wiki_v1_jan_20_";
+    String pathToSave = "/Users/sarker/Workspaces/Jetbrains/residue/data/KGS/automated_kg_wiki/wiki_full_cats_v0_non_cyclic_jan_20_";
     String onto_prefix = "http://www.daselab.com/residue/analysis#";
 
     public void fillCatHierHashMap(ResultSet resultSetCat) {
@@ -84,6 +85,7 @@ public class WikiCatNoCycle {
      * @param resultSetPages
      */
     public void fillIdToTitleHashMap(ResultSet resultSetPages) {
+        System.out.println("initially pageIdToTitleMap size: "+ pageIdToTitleMap.size());
         try {
             while (resultSetPages.next()) {
                 Long page_id = resultSetPages.getLong("page_id");
@@ -97,6 +99,7 @@ public class WikiCatNoCycle {
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+        System.out.println("after filling pageIdToTitleMap size: "+ pageIdToTitleMap.size());
     }
 
 
@@ -112,10 +115,10 @@ public class WikiCatNoCycle {
 
             LinkedHashSet<String> catsQueue = new LinkedHashSet<>();
             HashSet<String> visitedCatTitles = new HashSet<>();
-            catsQueue.add(rootCategoryName);
+            catsQueue.add(rootCategoryNameIncludingAdminInfo);
             int level = 0;
 
-            System.out.println("BFS started from the root node: " + rootCategoryName);
+            System.out.println("BFS started from the root node: " + rootCategoryNameIncludingAdminInfo);
             while (!catsQueue.isEmpty()) {
 
                 String parentCategoryName = catsQueue.iterator().next();
@@ -133,10 +136,12 @@ public class WikiCatNoCycle {
                                     "wiki_cats.categorylinks.cl_to='" + parentCategoryName + "' and wiki_cats.categorylinks.cl_type=\"subcat\"";
                         }
                         if (counter % 100000 == 0)
-                            System.out.println("Counter: " + counter + "\t Queue size: " + catsQueue.size() + "\t Visited size: " + visitedCatTitles.size() + "\t Query '" + catLinksQuery + "' started.............. ");
+                            System.out.println("Counter: " + counter + "\t Queue size: " + catsQueue.size() +
+                                    "\t Visited size: " + visitedCatTitles.size() + "\t Query '" + catLinksQuery + "' started.............. ");
                         resultSetCat = statement.executeQuery(catLinksQuery);
                         if (counter % 100000 == 0)
-                            System.out.println("Counter: " + counter + "\t Queue size: " + catsQueue.size() + "\t Visited size: " + visitedCatTitles.size() + "\t Query '" + catLinksQuery + "'  successfull. ");
+                            System.out.println("Counter: " + counter + "\t Queue size: " + catsQueue.size() +
+                                    "\t Visited size: " + visitedCatTitles.size() + "\t Query '" + catLinksQuery + "'  successfull. ");
 
                         // cache the resultSetCat
                         HashSet<Long> childIdsHashSet = new HashSet<>();
@@ -148,17 +153,7 @@ public class WikiCatNoCycle {
 
                         // get all children of this parent, parentCategoryName
                         for (Long child_Id : childIdsHashSet) {
-//                            try {
-//                                pageTitleQuery = "select page_title from wiki_pages.page where wiki_pages.page.page_id=" + child_Id;
-//                                if (counter % 100000 == 0)
-//                                    System.out.println("Counter: " + counter + "\t Queue size: " + catsQueue.size() + "\t Visited size: " + visitedCatTitles.size() + "\t Query '" + pageTitleQuery + "' started.............. ");
-//                                resultSetPages = statement.executeQuery(pageTitleQuery);
-//                                if (counter % 100000 == 0)
-//                                    System.out.println("Counter: " + counter + "\t Queue size: " + catsQueue.size() + "\t Visited size: " + visitedCatTitles.size() + "\t Query '" + pageTitleQuery + "' successfull. ");
 
-                            // resultSetPages should return only 1 result
-//                                if (resultSetPages.next()) {
-//                                    String childCategoryName = resultSetPages.getString("page_title");
                             String childCategoryName = pageIdToTitleMap.get(child_Id);
                             if (null != childCategoryName) {
                                 // create relation
@@ -170,17 +165,9 @@ public class WikiCatNoCycle {
                                         catsQueue.add(childCategoryName);
                                 }
                             }
-//                                } else {
-//                                    System.out.println("No page_title found for this page id : " + child_Id);
-//                                }
                             counter++;
 //                                if (counter > 200)
 //                                    return;
-//                            } catch (SQLException ex) {
-//                                System.out.println("Exception in executing query....skipping this query");
-//                                System.out.println("catlinkQuery: " + catLinksQuery);
-//                                System.out.println("pageTitleQuery: " + pageTitleQuery);
-//                            }
                         }
                     } catch (SQLException ex) {
                         System.out.println("Exception in executing query....skipping this query");
@@ -254,7 +241,7 @@ public class WikiCatNoCycle {
     }
 
     public void saveOntoToFile() {
-        String finalPathToSave = pathToSave + counter + ".ttl";
+        String finalPathToSave = pathToSave + counter + ".owl";
         System.out.println("\nSaving to " + finalPathToSave + " started...........");
         try {
             Utility.saveOntology(owlOntology, owlxmlDocumentFormat, finalPathToSave);

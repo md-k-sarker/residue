@@ -5,6 +5,7 @@ Written at 9/26/19.
 
 import org.dase.ecii.util.Utility;
 import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -12,12 +13,9 @@ import java.util.HashSet;
 
 public class TestRaw {
 
-    public static void main(String []args) throws OWLOntologyCreationException, IOException {
+    public static void main(String []args) {
 
-        HashMap<String,Integer> strings = new HashMap<>();
-        strings.put("abc",1);
-        strings.put("pqr",1);
-        System.out.println(strings.keySet());
+
 //        OWLOntology ontology = Utility.loadOntology("/Users/sarker/Workspaces/Jetbrains/residue/data/KGS/enwiki-20191109-categories.ttl");
 
 //         ontology.getClassesInSignature().forEach(owlClass -> {
@@ -67,7 +65,11 @@ public class TestRaw {
 //                }
 //            }
 
+            String reasonerFactoryClassName = null;
 
+            OWLReasonerFactory reasonerFactory = (OWLReasonerFactory)  Class.forName(reasonerFactoryClassName).newInstance();
+
+            System.out.println(reasonerFactory.getReasonerName());
 
         } catch (Exception  e) {
             e.printStackTrace();

@@ -4,14 +4,17 @@ Written by sarker.
 Written at 1/26/20.
 */
 
+import org.apache.jena.ontology.OntModel;
+import org.apache.jena.ontology.OntModelSpec;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.ModelMaker;
 import org.dase.ecii.util.Utility;
-import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.formats.OWLXMLDocumentFormat;
-import org.semanticweb.owlapi.formats.TurtleDocumentFormat;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
-public class WikiKGStats {
+public class WikiKGStatsJena {
+
+    private OntModel ontModel;
 
     private OWLOntology owlOntology;
     private OWLDataFactory owlDataFactory;
@@ -56,7 +59,11 @@ public class WikiKGStats {
     public void initOnto() {
         try {
 
+
             System.out.println("Loading ontology .....................");
+            ontModel = ModelFactory.createOntologyModel(OntModelSpec.RDFS_MEM_RDFS_INF);
+            ontModel.read(ontoPath);
+            ontModel.getOntClass("").listSubClasses(true);
             owlOntology = Utility.loadOntology(ontoPath);
             System.out.println("Loading ontology finished");
             owlOntologyManager = owlOntology.getOWLOntologyManager();
@@ -68,7 +75,7 @@ public class WikiKGStats {
 
     public static void main(String[] args) {
 
-        WikiKGStats wikiKGStats = new WikiKGStats();
+        WikiKGStatsJena wikiKGStats = new WikiKGStatsJena();
 
         final long intiOntoStartTime = System.currentTimeMillis();
         wikiKGStats.initOnto();
