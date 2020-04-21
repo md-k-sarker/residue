@@ -1,0 +1,23 @@
+curl -X GET "https://api.dbpedia-spotlight.org/en/annotate?text=Barack%20Obama%20gay" -H "accept: application/json"
+
+
+Response body
+{
+  "@text": "Barack Obama is a ..",
+  "@confidence": "0.5",
+  "@support": "0",
+  "@types": "",
+  "@sparql": "",
+  "@policy": "whitelist",
+  "Resources": [
+    {
+      "@URI": "http://dbpedia.org/resource/Barack_Obama",
+      "@support": "25941",
+      "@types": "Http://xmlns.com/foaf/0.1/Person,Wikidata:Q82955,Wikidata:Q5,Wikidata:Q30461,Wikidata:Q24229398,Wikidata:Q215627,DUL:NaturalPerson,DUL:Agent,Schema:Person,DBpedia:President,DBpedia:Politician,DBpedia:Person,DBpedia:Agent",
+      "@surfaceForm": "Barack Obama",
+      "@offset": "0",
+      "@similarityScore": "0.9999891822494602",
+      "@percentageOfSecondRank": "8.48443932669829E-6"
+    },
+  ]
+}

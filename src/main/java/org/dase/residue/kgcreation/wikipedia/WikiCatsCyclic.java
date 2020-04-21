@@ -9,6 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.dase.ecii.util.Utility;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.formats.OWLXMLDocumentFormat;
+import org.semanticweb.owlapi.formats.RDFDocumentFormat;
+import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat;
 import org.semanticweb.owlapi.formats.TurtleDocumentFormat;
 import org.semanticweb.owlapi.model.*;
 
@@ -54,6 +56,7 @@ public class WikiCatsCyclic {
     private OWLOntology owlOntology;
     private TurtleDocumentFormat turtleDocumentFormat;
     private OWLXMLDocumentFormat owlxmlDocumentFormat;
+    private RDFXMLDocumentFormat rdfxmlDocumentFormat;
     private OWLDataFactory owlDataFactory;
     private OWLOntologyManager owlOntologyManager;
     private int counter = 0;
@@ -225,10 +228,11 @@ public class WikiCatsCyclic {
     }
 
     public void saveOntoToFile() {
-        String finalPathToSave = pathToSave + counter + ".owl";
+        String finalPathToSave = pathToSave + counter + ".rdf";
         System.out.println("\nSaving to " + finalPathToSave + " started...........");
         try {
-            Utility.saveOntology(owlOntology, owlxmlDocumentFormat, finalPathToSave);
+            // there was a problem when saving into turtle format.
+            Utility.saveOntology(owlOntology, rdfxmlDocumentFormat, finalPathToSave);
         } catch (OWLOntologyStorageException e) {
             e.printStackTrace();
         }
@@ -245,6 +249,7 @@ public class WikiCatsCyclic {
         owlDataFactory = owlOntologyManager.getOWLDataFactory();
         turtleDocumentFormat = new TurtleDocumentFormat();
         owlxmlDocumentFormat = new OWLXMLDocumentFormat();
+        rdfxmlDocumentFormat = new RDFXMLDocumentFormat();
     }
 
     /**

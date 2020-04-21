@@ -2,6 +2,7 @@ package org.dase;
 
 
 import org.apache.log4j.PropertyConfigurator;
+import org.dase.ecii.core.CandidateSolutionFinder;
 import org.dase.ecii.core.CandidateSolutionFinderV1;
 import org.dase.ecii.core.SharedDataHolder;
 import org.dase.ecii.datastructure.CandidateSolutionV1;
@@ -34,6 +35,8 @@ public class Main_Residue {
     private static OWLReasoner owlReasoner;
     private static PrintStream outPutStream;
     private static Monitor monitor;
+
+    static double max_precision = 0.0;
 
     private static JTextPane jTextPane;
 
@@ -114,7 +117,7 @@ public class Main_Residue {
             doECIIOps();
 
             // find similary
-            findSimilarity();
+            // findSimilarity();
 
             monitor.displayMessage("Result saved at: " + ConfigParams.outputResultPath, true);
             monitor.stop(System.lineSeparator() + "Program finished.", true);
@@ -153,17 +156,19 @@ public class Main_Residue {
 
         // algorithm starting time here.
         DateFormat dateFormat = Utility.getDateTimeFormat();
-         algoStartTime = System.currentTimeMillis();
+        algoStartTime = System.currentTimeMillis();
         monitor.displayMessage("Algorithm starts at: " + dateFormat.format(new Date()), true);
 
         // initiate reasoner
         owlReasoner = Utility.initReasoner(ConfigParams.reasonerName, ontology, monitor);
 
         SharedDataHolder.posIndivs = Utility.readPosExamplesFromConf(SharedDataHolder.confFileFullContent);
+
         SharedDataHolder.negIndivs = Utility.readNegExamplesFromConf(SharedDataHolder.confFileFullContent);
 
         // write user defined values to resultFile
         monitor.writeMessage("\nUser defined parameters:");
+        monitor.writeMessage("Remove common types: " + ConfigParams.removeCommonTypes);
         monitor.writeMessage("K1/negExprTypeLimit: " + ConfigParams.conceptLimitInNegExpr);
         monitor.writeMessage("K2/hornClauseLimit: " + ConfigParams.hornClauseLimit);
         monitor.writeMessage("K3/objPropsCombinationLimit: " + ConfigParams.objPropsCombinationLimit);
@@ -186,7 +191,7 @@ public class Main_Residue {
         });
 
         // Create a new ConceptFinder object with the given reasoner.
-        CandidateSolutionFinderV1 findConceptsObj = new CandidateSolutionFinderV1(owlReasoner, ontology, outPutStream, monitor);
+        CandidateSolutionFinder findConceptsObj = new CandidateSolutionFinder(owlReasoner, ontology, outPutStream, monitor);
 //        ConceptFinderComplex findConceptsObj = new ConceptFinderComplex(owlReasoner, ontology, outPutStream, monitor);
 
         logger.info("finding solutions started...............");
@@ -200,12 +205,12 @@ public class Main_Residue {
         //findConceptsObj.sortSolutions(false);
         logger.info("sorting solutions finished.");
 
-        logger.info("calculating accuracy using reasoner for top k6 solutions................");
+//        logger.info("calculating accuracy using reasoner for top k6 solutions................");
         int K6 = 6;
-        findConceptsObj.calculateAccuracyOfTopK6ByReasoner(K6);
-        logger.info("calculating accuracy using reasoner for top k6 solutions................");
+//        findConceptsObj.calculateAccuracyOfTopK6ByReasoner(K6);
+//        logger.info("calculating accuracy using reasoner for top k6 solutions................");
 
-         algoEndTime = System.currentTimeMillis();
+        algoEndTime = System.currentTimeMillis();
         monitor.displayMessage("\nAlgorithm ends at: " + dateFormat.format(new Date()), true);
         logger.info("Algorithm ends at: " + dateFormat.format(new Date()), true);
         monitor.displayMessage("\nAlgorithm duration: " + (algoEndTime - algoStartTime) / 1000.0 + " sec", true);
@@ -259,8 +264,6 @@ public class Main_Residue {
      * Steps: Find all the types in that IFP.
      * If all types are subsumed by a solution then add that solution. Calculate each concept at a time, dont make new concpet by: concept1 and concept 2
      */
-    static double max_precision = 0.0;
-
     private static void findSimilarity() throws IOException {
 
         logger.info("Finding similarity started...............");
@@ -285,12 +288,12 @@ public class Main_Residue {
                 max_precision = candidateSolutionV1.getScore().getPrecision();
             }
         }
-        monitor.displayMessage("\nMaximum precision of solutions: "+ max_precision, true);
+        monitor.displayMessage("\nMaximum precision of solutions: " + max_precision, true);
         ArrayList<CandidateSolutionV1> solutions_with_max_accuracy = new ArrayList<>(
                 SharedDataHolder.SortedCandidateSolutionSetV1.stream().filter(
                         candidateSolutionV1 -> candidateSolutionV1.getScore().getPrecision() == max_precision).collect(Collectors.toList()));
 
-        monitor.displayMessage("\nTotal solutions with precision "+ max_precision + " "+ solutions_with_max_accuracy.size(), true);
+        monitor.displayMessage("\nTotal solutions with precision " + max_precision + " " + solutions_with_max_accuracy.size(), true);
 
         double accuracy_total_for_all_indiv = 0;
         double accuracy_avg_for_all_indiv = 0;
@@ -300,11 +303,11 @@ public class Main_Residue {
 
         logger.info("Caching of subsumed Indivs started...........");
         // cache the subsumed individuals
-        HashMap<CandidateSolutionV1,HashSet<OWLNamedIndividual>> subsumedIndivsCache = new HashMap<>();
-        for (CandidateSolutionV1 candidateSolutionV1 : solutions_with_max_accuracy){
+        HashMap<CandidateSolutionV1, HashSet<OWLNamedIndividual>> subsumedIndivsCache = new HashMap<>();
+        for (CandidateSolutionV1 candidateSolutionV1 : solutions_with_max_accuracy) {
             HashSet<OWLNamedIndividual> subsumedIndivs = new HashSet<>(owlReasoner.getInstances(
                     candidateSolutionV1.getSolutionAsOWLClassExpression(), false).getFlattened());
-            subsumedIndivsCache.put(candidateSolutionV1,subsumedIndivs);
+            subsumedIndivsCache.put(candidateSolutionV1, subsumedIndivs);
         }
         logger.info("Caching of subsumed Indivs finished");
         monitor.displayMessage("Total IFP: " + owlNamedIndividualHashSet.size(), true);
@@ -316,21 +319,12 @@ public class Main_Residue {
             for (CandidateSolutionV1 candidateSolutionV1 : solutions_with_max_accuracy) {
                 logger.debug("started looking subsumed by candidate solution: " + candidateSolutionV1.getSolutionAsString(true));
 
-                if(subsumedIndivsCache.get(candidateSolutionV1).contains(individual) ){
+                if (subsumedIndivsCache.get(candidateSolutionV1).contains(individual)) {
                     logger.debug(Utility.getShortNameWithPrefix(individual) +
                             " is subsumed by solution " + candidateSolutionV1.getSolutionAsString(true));
                     accuracy_total_for_single_indiv += candidateSolutionV1.getScore().getPrecision();
                 }
 
-//                HashSet<OWLNamedIndividual> subsumedIndivs = new HashSet<>(owlReasoner.getInstances(
-//                        candidateSolutionV1.getSolutionAsOWLClassExpression(), false).getFlattened());
-
-//                if (subsumedIndivs.contains(individual)) {
-//                    logger.debug(Utility.getShortNameWithPrefix(individual) +
-//                            " is subsumed by solution " + candidateSolutionV1.getSolutionAsString(true));
-//                    accuracy_total_for_single_indiv += candidateSolutionV1.getScore().getPrecision();
-//                } else {
-//                }
             }
             logger.debug("accuracy_total_for_single_indiv: " + accuracy_total_for_single_indiv);
             accuracy_avg_for_single_indiv = accuracy_total_for_single_indiv / SharedDataHolder.SortedCandidateSolutionSetV1.size();
@@ -378,13 +372,9 @@ public class Main_Residue {
     }
 
 
-    /**
-     * Process the configurations of the program.
-     */
-    private static void processConfigurations() {
+    private static void initLogSettings() {
 
     }
-
 
     /**
      * @param args
@@ -393,19 +383,25 @@ public class Main_Residue {
      */
     public static void main(String[] args) throws OWLOntologyCreationException, IOException, MalFormedIRIException {
 
-        PropertyConfigurator.configure("/Users/sarker/Workspaces/Jetbrains/residue/java/residue_java_v1/src/main/resources/log4j.properties");
+        try {
+            PropertyConfigurator.configure("/Users/sarker/Workspaces/Jetbrains/residue/java/residue_java_v1/src/main/resources/log4j.properties");
 
 
-        SharedDataHolder.programStartingDir = System.getProperty("user.dir");
-        logger.info("Working directory/Program starting directory = " + SharedDataHolder.programStartingDir);
-        logger.debug("args.length: " + args.length);
+            SharedDataHolder.programStartingDir = System.getProperty("user.dir");
+            logger.info("Working directory/Program starting directory = " + SharedDataHolder.programStartingDir);
+            logger.debug("args.length: " + args.length);
 
-        String config_path = "/Users/sarker/Workspaces/Jetbrains/residue/experiments/RCTA_IFP/experiment_8_ION_proposed/experiment_8_ION_proposed.config";
+            String config_path = "/Users/sarker/Workspaces/Jetbrains/emerald/experiments/ade20k-sumo/kitchen_vs_non-kitchen_fn_vs_tp/kitchen_vs_non-kitchen_fn_vs_tp.config";
 
-        ConfigParams.batch = false;
+            ConfigParams.batch = false;
+            System.out.println("encoding: "+System.getProperty("file.encoding"));
+//            OWLOntology ontology = Utility.loadOntology("/Users/sarker/Workspaces/Jetbrains/residue/data/KGS/automated_wiki/wiki_full_pages_v0_non_cyclic_jan_20_32808131.rdf");
 
-        ConfigParams.parseConfigParams(config_path);
-        System.out.println("parsing okay");
-        initiateSingleDoOps(ConfigParams.outputResultPath);
+//            ConfigParams.parseConfigParams(config_path);
+//            initiateSingleDoOps(ConfigParams.outputResultPath);
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
     }
 }

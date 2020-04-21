@@ -5,13 +5,19 @@ Written at 11/16/19.
 */
 
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
 import org.dase.ecii.util.Utility;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.formats.OWLXMLDocumentFormat;
 //import org.semanticweb.owlapi.formats.TurtleDocumentFormat;
+import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat;
 import org.semanticweb.owlapi.model.*;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
@@ -22,7 +28,7 @@ import java.util.*;
 /**
  * Process wiki category from the db dump and make the category hierarchy ontology, without breaking the cycle.
  */
-public class WikiCatNoCycle {
+public class WikiCatsNoCycle {
     private Connection connect = null;
     private Statement statement = null;
     private PreparedStatement preparedStatement = null;
@@ -37,9 +43,15 @@ public class WikiCatNoCycle {
     private OWLOntology owlOntology;
     //    private TurtleDocumentFormat turtleDocumentFormat;
     private OWLXMLDocumentFormat owlxmlDocumentFormat;
+    private RDFXMLDocumentFormat rdfxmlDocumentFormat;
     private OWLDataFactory owlDataFactory;
     private OWLOntologyManager owlOntologyManager;
     private int counter = 0;
+
+    /**
+     * Parent,Child. If we would have created this link then it would create a cycle.
+     */
+    HashMap<String, String> cyclicRelationCutterMap = new HashMap<>();
 
     String pathToSave = "/Users/sarker/Workspaces/Jetbrains/residue/data/KGS/automated_kg_wiki/wiki_full_cats_v0_non_cyclic_jan_20_";
     String onto_prefix = "http://www.daselab.com/residue/analysis#";
@@ -102,6 +114,28 @@ public class WikiCatNoCycle {
         System.out.println("after filling pageIdToTitleMap size: "+ pageIdToTitleMap.size());
     }
 
+    public void saveCyclicInfoToCSV() {
+        try {
+            String csv_path = "/Users/sarker/Workspaces/Jetbrains/residue/data/KGS/automated_kg_wiki/cyclic_breaker.csv";
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(csv_path));
+            CSVPrinter csvPrinter = new CSVPrinter(bufferedWriter, CSVFormat.DEFAULT.withHeader("Parent", "Child"));
+
+            cyclicRelationCutterMap.forEach((parent, child) -> {
+                try {
+                    csvPrinter.printRecord(parent,child);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            csvPrinter.flush();
+            csvPrinter.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      *
@@ -115,10 +149,10 @@ public class WikiCatNoCycle {
 
             LinkedHashSet<String> catsQueue = new LinkedHashSet<>();
             HashSet<String> visitedCatTitles = new HashSet<>();
-            catsQueue.add(rootCategoryNameIncludingAdminInfo);
+            catsQueue.add(rootCategoryName);
             int level = 0;
 
-            System.out.println("BFS started from the root node: " + rootCategoryNameIncludingAdminInfo);
+            System.out.println("BFS started from the root node: " + rootCategoryName);
             while (!catsQueue.isEmpty()) {
 
                 String parentCategoryName = catsQueue.iterator().next();
@@ -213,6 +247,7 @@ public class WikiCatNoCycle {
     }
 
     private String trimOrReplaceSearchChars = " `~!@#$%^&*()-+={}[]|\\;'\"<>,.?/";
+
     // length of replaceChars must be same with trimOrReplaceSearchChars
     // https://commons.apache.org/proper/commons-lang/javadocs/api-2.6/org/apache/commons/lang/StringUtils.html#replaceChars(java.lang.String,%20java.lang.String,%20java.lang.String)
     private String replaceChars = "_______________________________";
@@ -225,18 +260,17 @@ public class WikiCatNoCycle {
     /**
      * create a single subclassOf relation
      *
-     * @param cName
-     * @param pName
+     * @param childName
+     * @param parentName
      */
-    private void createRelation(String cName, String pName) {
-        IRI cIRI = IRI.create(onto_prefix + beautifyName(cName));
-        IRI pIRI = IRI.create(onto_prefix + beautifyName(pName));
+    private void createRelation(String childName, String parentName) {
+        IRI cIRI = IRI.create(onto_prefix + beautifyName(childName));
+        IRI pIRI = IRI.create(onto_prefix + beautifyName(parentName));
 
         OWLClass cClass = owlDataFactory.getOWLClass(cIRI);
         OWLClass pClass = owlDataFactory.getOWLClass(pIRI);
 
         OWLAxiom owlAxiom = owlDataFactory.getOWLSubClassOfAxiom(cClass, pClass);
-
         owlOntologyManager.addAxiom(owlOntology, owlAxiom);
     }
 
@@ -260,6 +294,7 @@ public class WikiCatNoCycle {
         }
         owlDataFactory = owlOntologyManager.getOWLDataFactory();
 //        turtleDocumentFormat = new TurtleDocumentFormat();
+        rdfxmlDocumentFormat = new RDFXMLDocumentFormat();
         owlxmlDocumentFormat = new OWLXMLDocumentFormat();
         try {
             System.out.println("connecting to db................ ");
@@ -274,21 +309,21 @@ public class WikiCatNoCycle {
 
 
     public static void main(String[] args) throws Exception {
-        WikiCatNoCycle wikiCatNoCycle = new WikiCatNoCycle();
-        wikiCatNoCycle.initData();
+        WikiCatsNoCycle wikiCatsNoCycle = new WikiCatsNoCycle();
+        wikiCatsNoCycle.initData();
 
         final long readDatabaseStartTime = System.currentTimeMillis();
-        wikiCatNoCycle.cachePageTitles();
-        wikiCatNoCycle.traverseDataBaseBFS();
+        wikiCatsNoCycle.cachePageTitles();
+        wikiCatsNoCycle.traverseDataBaseBFS();
         final long readDatabaseEndTime = System.currentTimeMillis();
         System.out.println("Databse read+traverse time: " + (readDatabaseEndTime - readDatabaseStartTime) / 60000 + " minutes");
 
-        wikiCatNoCycle.closeConnections();
+        wikiCatsNoCycle.closeConnections();
 
         final long saveOntologyStartTime = System.currentTimeMillis();
-        wikiCatNoCycle.saveOntoToFile();
+        wikiCatsNoCycle.saveCyclicInfoToCSV();
         final long saveOntologyEndTime = System.currentTimeMillis();
-        System.out.println("Save ontology time: " + (saveOntologyEndTime - saveOntologyStartTime) / 60000 + " minutes");
+        System.out.println("Save cyclic info time: " + (saveOntologyEndTime - saveOntologyStartTime) / 60000 + " minutes");
     }
 
 }

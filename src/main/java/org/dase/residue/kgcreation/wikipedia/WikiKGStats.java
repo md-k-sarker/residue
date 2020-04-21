@@ -16,7 +16,7 @@ public class WikiKGStats {
     private OWLOntology owlOntology;
     private OWLDataFactory owlDataFactory;
     private OWLOntologyManager owlOntologyManager;
-    private String ontoPath = "/Users/sarker/Workspaces/Jetbrains/residue/data/KGS/automated_kg_wiki/wiki_full_cats_v0_non_cyclic_jan_20.owl";
+    private String ontoPath = "/Users/sarker/Workspaces/Jetbrains/residue/data/KGS/automated_kg_wiki/wiki_full_pages_v0_non_cyclic_jan_20_32808131.rdf";
     private String onto_prefix = "http://www.daselab.com/residue/analysis#";
     private OWLClass rootClass;
     private OWLReasoner owlReasoner;

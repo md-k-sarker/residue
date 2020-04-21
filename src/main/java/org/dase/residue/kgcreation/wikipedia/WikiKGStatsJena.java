@@ -19,7 +19,7 @@ public class WikiKGStatsJena {
     private OWLOntology owlOntology;
     private OWLDataFactory owlDataFactory;
     private OWLOntologyManager owlOntologyManager;
-    private String ontoPath = "/Users/sarker/Workspaces/Jetbrains/residue/data/KGS/automated_kg_wiki/wiki_full_cats_v0_non_cyclic_jan_20.owl";
+    private String ontoPath = "/Users/sarker/Workspaces/Jetbrains/residue/data/KGS/automated_kg_wiki/wiki_full_pages_v0_non_cyclic_jan_20_32808131.rdf";
     private String onto_prefix = "http://www.daselab.com/residue/analysis#";
     private OWLClass rootClass;
     private OWLReasoner owlReasoner;
@@ -32,7 +32,7 @@ public class WikiKGStatsJena {
         System.out.println("Total objectProperties: " + owlOntology.getObjectPropertiesInSignature().size());
     }
 
-    public void createTree(){
+    public void createTree() {
         IRI rootClassIRI = IRI.create(onto_prefix + "Main_topic_classifications");
         rootClass = owlDataFactory.getOWLClass(rootClassIRI);
     }
@@ -61,10 +61,10 @@ public class WikiKGStatsJena {
 
 
             System.out.println("Loading ontology .....................");
-            ontModel = ModelFactory.createOntologyModel(OntModelSpec.RDFS_MEM_RDFS_INF);
-            ontModel.read(ontoPath);
-            ontModel.getOntClass("").listSubClasses(true);
-            owlOntology = Utility.loadOntology(ontoPath);
+            ontModel = ModelFactory.createOntologyModel(OntModelSpec.RDFS_MEM);
+            ontModel.read("file:" + ontoPath);
+//            ontModel.getOntClass("").listSubClasses(true);
+//            owlOntology = Utility.loadOntology(ontoPath);
             System.out.println("Loading ontology finished");
             owlOntologyManager = owlOntology.getOWLOntologyManager();
             owlDataFactory = owlOntologyManager.getOWLDataFactory();
@@ -82,7 +82,7 @@ public class WikiKGStatsJena {
         final long intiOntoEndTime = System.currentTimeMillis();
         System.out.println("Init ontology time: " + (intiOntoEndTime - intiOntoStartTime) / 60000 + " minutes");
 
-        wikiKGStats.calcStats();
+//        wikiKGStats.calcStats();
 
 //        final long reasoningStartTime = System.currentTimeMillis();
 //        wikiKGStats.doReasoning();
