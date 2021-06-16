@@ -33,7 +33,7 @@
         <testng.version>6.11</testng.version>
         <junit.version>4.12</junit.version>
 
-        <tomcat.version>8.5.23</tomcat.version>
+        <tomcat.version>8.5.61</tomcat.version>
         <jaxb.version>2.3.0</jaxb.version>
         <mainclass>org.org.dase.Main_ECII</mainclass>
 
