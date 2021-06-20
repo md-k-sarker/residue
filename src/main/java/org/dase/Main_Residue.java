@@ -4,6 +4,7 @@ package org.dase;
 import org.apache.log4j.PropertyConfigurator;
 import org.dase.ecii.core.CandidateSolutionFinder;
 import org.dase.ecii.core.CandidateSolutionFinderV1;
+import org.dase.ecii.core.CandidateSolutionFinderV2;
 import org.dase.ecii.core.SharedDataHolder;
 import org.dase.ecii.datastructure.CandidateSolutionV1;
 import org.dase.ecii.exceptions.MalFormedIRIException;
@@ -52,7 +53,7 @@ public class Main_Residue {
     public static void init() {
         // make sure ontology is loaded before init.
         if (null != ontology) {
-            SharedDataHolder.owlOntology = ontology;
+            SharedDataHolder.owlOntologyOriginal = ontology;
             SharedDataHolder.owlOntologyManager = ontology.getOWLOntologyManager();
             SharedDataHolder.owlDataFactory = ontology.getOWLOntologyManager().getOWLDataFactory();
 
@@ -91,9 +92,9 @@ public class Main_Residue {
         // public static OWLConceptHierarchy owlConceptHierarchy;
         // owlClassExpressionTrees;
 
-        SharedDataHolder.CandidateSolutionSet.clear();
+        SharedDataHolder.CandidateSolutionSetV2.clear();
         // HashMap<Solution:solution,Boolean:shouldTraverse> SolutionsMap
-        SharedDataHolder.SortedCandidateSolutionSet.clear();
+        SharedDataHolder.SortedCandidateSolutionListV2.clear();
     }
 
 
@@ -162,9 +163,9 @@ public class Main_Residue {
         // initiate reasoner
         owlReasoner = Utility.initReasoner(ConfigParams.reasonerName, ontology, monitor);
 
-        SharedDataHolder.posIndivs = Utility.readPosExamplesFromConf(SharedDataHolder.confFileFullContent);
+        SharedDataHolder.posIndivs = Utility.readPosExamplesFromConf(SharedDataHolder.confFileFullContent, "#");
 
-        SharedDataHolder.negIndivs = Utility.readNegExamplesFromConf(SharedDataHolder.confFileFullContent);
+        SharedDataHolder.negIndivs = Utility.readNegExamplesFromConf(SharedDataHolder.confFileFullContent, "#");
 
         // write user defined values to resultFile
         monitor.writeMessage("\nUser defined parameters:");
@@ -191,7 +192,7 @@ public class Main_Residue {
         });
 
         // Create a new ConceptFinder object with the given reasoner.
-        CandidateSolutionFinder findConceptsObj = new CandidateSolutionFinder(owlReasoner, ontology, outPutStream, monitor);
+        CandidateSolutionFinder findConceptsObj = new CandidateSolutionFinderV2(owlReasoner, ontology, outPutStream, monitor);
 //        ConceptFinderComplex findConceptsObj = new ConceptFinderComplex(owlReasoner, ontology, outPutStream, monitor);
 
         logger.info("finding solutions started...............");
@@ -200,10 +201,10 @@ public class Main_Residue {
         //findConceptsObj.findConcepts(ConfigParams.tolerance, SharedDataHolder.objPropImageContains, ConfigParams.conceptsCombinationLimit);
         logger.info("\nfinding solutions finished.");
 
-        logger.info("sorting solutions................");
-        findConceptsObj.sortSolutionsCustom(false);
-        //findConceptsObj.sortSolutions(false);
-        logger.info("sorting solutions finished.");
+//        logger.info("sorting solutions................");
+//        findConceptsObj.sortSolutionsCustom(false);
+//        //findConceptsObj.sortSolutions(false);
+//        logger.info("sorting solutions finished.");
 
 //        logger.info("calculating accuracy using reasoner for top k6 solutions................");
         int K6 = 6;
@@ -259,89 +260,6 @@ public class Main_Residue {
     }
 
 
-    /**
-     * Find similarity score of a new IFP with respect to the solutions.
-     * Steps: Find all the types in that IFP.
-     * If all types are subsumed by a solution then add that solution. Calculate each concept at a time, dont make new concpet by: concept1 and concept 2
-     */
-    private static void findSimilarity() throws IOException {
-
-        logger.info("Finding similarity started...............");
-        String ifps_path = "/Users/sarker/Workspaces/Jetbrains/residue/experiments/KG-based similarity/IFP_Categories/ifps_to_compare.txt";
-
-        monitor.displayMessage("\nFinding similarity of IFP's ", true);
-        FileReader fileReader = new FileReader(ifps_path);
-        BufferedReader bf = new BufferedReader(fileReader);
-
-        String[] strs = bf.readLine().split(",");
-
-        ArrayList<OWLNamedIndividual> owlNamedIndividualHashSet = new ArrayList<>();
-
-        for (String str : strs) {
-            IRI iri = IRI.create(str);
-            OWLNamedIndividual owlNamedIndividual = SharedDataHolder.owlDataFactory.getOWLNamedIndividual(iri);
-            owlNamedIndividualHashSet.add(owlNamedIndividual);
-        }
-
-        for (CandidateSolutionV1 candidateSolutionV1 : SharedDataHolder.SortedCandidateSolutionSetV1) {
-            if (candidateSolutionV1.getScore().getPrecision() > max_precision) {
-                max_precision = candidateSolutionV1.getScore().getPrecision();
-            }
-        }
-        monitor.displayMessage("\nMaximum precision of solutions: " + max_precision, true);
-        ArrayList<CandidateSolutionV1> solutions_with_max_accuracy = new ArrayList<>(
-                SharedDataHolder.SortedCandidateSolutionSetV1.stream().filter(
-                        candidateSolutionV1 -> candidateSolutionV1.getScore().getPrecision() == max_precision).collect(Collectors.toList()));
-
-        monitor.displayMessage("\nTotal solutions with precision " + max_precision + " " + solutions_with_max_accuracy.size(), true);
-
-        double accuracy_total_for_all_indiv = 0;
-        double accuracy_avg_for_all_indiv = 0;
-
-        if (owlNamedIndividualHashSet.size() <= 0)
-            return;
-
-        logger.info("Caching of subsumed Indivs started...........");
-        // cache the subsumed individuals
-        HashMap<CandidateSolutionV1, HashSet<OWLNamedIndividual>> subsumedIndivsCache = new HashMap<>();
-        for (CandidateSolutionV1 candidateSolutionV1 : solutions_with_max_accuracy) {
-            HashSet<OWLNamedIndividual> subsumedIndivs = new HashSet<>(owlReasoner.getInstances(
-                    candidateSolutionV1.getSolutionAsOWLClassExpression(), false).getFlattened());
-            subsumedIndivsCache.put(candidateSolutionV1, subsumedIndivs);
-        }
-        logger.info("Caching of subsumed Indivs finished");
-        monitor.displayMessage("Total IFP: " + owlNamedIndividualHashSet.size(), true);
-
-        for (OWLNamedIndividual individual : owlNamedIndividualHashSet) {
-            logger.debug("started looking subsumed for individual: " + individual.getIRI());
-            double accuracy_total_for_single_indiv = 0;
-            double accuracy_avg_for_single_indiv = 0;
-            for (CandidateSolutionV1 candidateSolutionV1 : solutions_with_max_accuracy) {
-                logger.debug("started looking subsumed by candidate solution: " + candidateSolutionV1.getSolutionAsString(true));
-
-                if (subsumedIndivsCache.get(candidateSolutionV1).contains(individual)) {
-                    logger.debug(Utility.getShortNameWithPrefix(individual) +
-                            " is subsumed by solution " + candidateSolutionV1.getSolutionAsString(true));
-                    accuracy_total_for_single_indiv += candidateSolutionV1.getScore().getPrecision();
-                }
-
-            }
-            logger.debug("accuracy_total_for_single_indiv: " + accuracy_total_for_single_indiv);
-            accuracy_avg_for_single_indiv = accuracy_total_for_single_indiv / SharedDataHolder.SortedCandidateSolutionSetV1.size();
-            logger.debug("accuracy_avg_for_single_indiv: " + accuracy_avg_for_single_indiv);
-
-            accuracy_total_for_all_indiv += accuracy_avg_for_single_indiv;
-            logger.debug("started looking subsumed for individual " + individual.getIRI() + " finished ");
-
-            monitor.displayMessage(" Similarity score of IFP " + Utility.getShortName(individual) + " with respect to group 2: " + accuracy_avg_for_single_indiv, true);
-        }
-
-        accuracy_avg_for_all_indiv = accuracy_total_for_all_indiv / owlNamedIndividualHashSet.size();
-        monitor.displayMessage("\nSimilarity score of all IFPs with respect to group 2 : " + accuracy_avg_for_all_indiv, true);
-
-        logger.info("Finding similarity finished");
-        monitor.displayMessage("Finding similarity finished. ", true);
-    }
 
 
     public static void printHelp() {

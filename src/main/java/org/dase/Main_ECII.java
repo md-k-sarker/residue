@@ -63,7 +63,7 @@ public class Main_ECII {
     public static void init() {
         // make sure ontology is loaded before init.
         if (null != ontology) {
-            SharedDataHolder.owlOntology = ontology;
+            SharedDataHolder.owlOntologyOriginal = ontology;
             SharedDataHolder.owlOntologyManager = ontology.getOWLOntologyManager();
             SharedDataHolder.owlDataFactory = ontology.getOWLOntologyManager().getOWLDataFactory();
 
@@ -102,9 +102,9 @@ public class Main_ECII {
         // public static OWLConceptHierarchy owlConceptHierarchy;
         // owlClassExpressionTrees;
 
-        SharedDataHolder.CandidateSolutionSet.clear();
+        SharedDataHolder.CandidateSolutionSetV2.clear();
         // HashMap<Solution:solution,Boolean:shouldTraverse> SolutionsMap
-        SharedDataHolder.SortedCandidateSolutionSet.clear();
+        SharedDataHolder.SortedCandidateSolutionListV2.clear();
     }
 
 
@@ -168,8 +168,8 @@ public class Main_ECII {
         // initiate reasoner
         owlReasoner = Utility.initReasoner(ConfigParams.reasonerName, ontology, monitor);
 
-        SharedDataHolder.posIndivs = Utility.readPosExamplesFromConf(SharedDataHolder.confFileFullContent);
-        SharedDataHolder.negIndivs = Utility.readNegExamplesFromConf(SharedDataHolder.confFileFullContent);
+        SharedDataHolder.posIndivs = Utility.readPosExamplesFromConf(SharedDataHolder.confFileFullContent, "#");
+        SharedDataHolder.negIndivs = Utility.readNegExamplesFromConf(SharedDataHolder.confFileFullContent, "#");
 
         // write user defined values to resultFile
         monitor.writeMessage("\nUser defined parameters:");
@@ -204,15 +204,15 @@ public class Main_ECII {
         //findConceptsObj.findConcepts(ConfigParams.tolerance, SharedDataHolder.objPropImageContains, ConfigParams.conceptsCombinationLimit);
         logger.info("\nfinding solutions finished.");
 
-        logger.info("sorting solutions................");
-        findConceptsObj.sortSolutionsCustom(false);
-        //findConceptsObj.sortSolutions(false);
-        logger.info("sorting solutions finished.");
+//        logger.info("sorting solutions................");
+//        findConceptsObj.sortSolutionsCustom(false);
+//        //findConceptsObj.sortSolutions(false);
+//        logger.info("sorting solutions finished.");
 
-        logger.info("calculating accuracy using reasoner for top k6 solutions................");
-        int K6 = 6;
-        findConceptsObj.calculateAccuracyOfTopK6ByReasoner(K6);
-        logger.info("calculating accuracy using reasoner for top k6 solutions................");
+//        logger.info("calculating accuracy using reasoner for top k6 solutions................");
+//        int K6 = 6;
+//        findConceptsObj.calculateAccuracyOfTopK6ByReasoner(K6);
+//        logger.info("calculating accuracy using reasoner for top k6 solutions................");
 
         Long algoEndTime = System.currentTimeMillis();
         monitor.displayMessage("\nAlgorithm ends at: " + dateFormat.format(new Date()), true);
@@ -221,7 +221,7 @@ public class Main_ECII {
         logger.info("Algorithm duration: " + (algoEndTime - algoStartTime) / 1000.0 + " sec", true);
 
         logger.info("printing solutions started...............");
-        findConceptsObj.printSolutions(K6);
+        findConceptsObj.printSolutions(0);
         logger.info("printing solutions finished.");
     }
 

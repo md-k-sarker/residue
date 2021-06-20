@@ -11,7 +11,6 @@ import org.dase.ecii.util.Utility;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.search.EntitySearcher;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -19,7 +18,7 @@ import java.util.HashSet;
 /**
  * Map entity from the text with the entity from the knowledge graph
  */
-public class EntityMapper {
+public class EntityMapperWithDbpedia {
 
     public OWLOntology owlOntology;
     private OWLDataFactory owlDataFactory;
@@ -94,7 +93,7 @@ public class EntityMapper {
 
 
     public static void main(String[] args) {
-        EntityMapper entityMapper = new EntityMapper();
+        EntityMapperWithDbpedia entityMapperWithDBPedia = new EntityMapperWithDbpedia();
 
     }
 

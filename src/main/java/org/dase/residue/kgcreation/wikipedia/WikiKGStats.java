@@ -22,11 +22,12 @@ public class WikiKGStats {
     private OWLReasoner owlReasoner;
 
     public void calcStats() {
-        System.out.println("Total axioms: " + owlOntology.getAxiomCount());
         System.out.println("Total classes: " + owlOntology.getClassesInSignature().size());
-        System.out.println("Total subclassOf axioms: " + owlOntology.getAxiomCount(AxiomType.SUBCLASS_OF));
         System.out.println("Total individuals: " + owlOntology.getIndividualsInSignature().size());
         System.out.println("Total objectProperties: " + owlOntology.getObjectPropertiesInSignature().size());
+        System.out.println("Total axioms: " + owlOntology.getAxiomCount());
+        System.out.println("Total subclassOf axioms: " + owlOntology.getAxiomCount(AxiomType.CLASS_ASSERTION));
+        System.out.println("Total subclassOf axioms: " + owlOntology.getAxiomCount(AxiomType.SUBCLASS_OF));
     }
 
     public void createTree(){
