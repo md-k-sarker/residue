@@ -38,10 +38,10 @@ public class Gene_to_susceptibility_3 {
 
     private String prefix = "http://www.daselab.org/ontologies/dream#";
 
-    private String lv_facts_for_ecii_csv_path = "/Volumes/Samsung_T5/projects_including_data_expr/residue_projects/data/phite/gene-to-susceptibility/LV_facts_for_ECII_H3N2.csv";
+    private String lv_facts_for_ecii_csv_path = "/Volumes/Samsung_T5/projects_including_data_expr/residue_projects/data/phite/gene-to-susceptibility/LV_facts_for_ECII_combined.csv";
     private String lv_to_geneID_mapping = "/Volumes/Samsung_T5/projects_including_data_expr/residue_projects/data/phite/gene-to-susceptibility/LV_to_GeneID_mapping.csv";
     private String gene_to_disease_mapping = "/Volumes/Samsung_T5/projects_including_data_expr/residue_projects/data/phite/gene-to-susceptibility/DREAM-genes.csv";
-    private String KGSave_to_path = "/Volumes/Samsung_T5/projects_including_data_expr/residue_projects/data/phite/gene-to-susceptibility/running-again-06-19-2021/gene-to-susceptibility-H3N2-v2.owl";
+    private String KGSave_to_path = "/Volumes/Samsung_T5/projects_including_data_expr/residue_projects/data/phite/gene-to-susceptibility/running-again-06-19-2021/gene-to-susceptibility-combined-v3.owl";
 
     OWLObjectProperty objPropSubjectAssociatedWithHighForLV = null;
     OWLObjectProperty objPropSubjectAssociatedWithLowForLV = null;
@@ -177,7 +177,7 @@ public class Gene_to_susceptibility_3 {
                 if (diseaseName != null && diseaseName.length() > 0) {
                     // todo(Sarker)
                     //  gene_id need to be changed to diseaseName
-                    IRI disease_id_iri = IRI.create(prefix, gene_id);
+                    IRI disease_id_iri = IRI.create(prefix, diseaseName);
                     OWLClass owlClassDisease = owlDataFactory.getOWLClass(disease_id_iri);
 
                     // assign sub and super class

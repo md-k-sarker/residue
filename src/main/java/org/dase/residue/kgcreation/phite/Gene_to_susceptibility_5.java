@@ -17,11 +17,10 @@ import java.util.HashSet;
 
 /**
  * @formatter:off
- * Same as the default Gene_to_susceptibility but applying the filter
- *
+ * Not tested/run yet!
  * @formatter:on
  */
-public class Gene_to_susceptibility_4 {
+public class Gene_to_susceptibility_5 {
 
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -34,20 +33,21 @@ public class Gene_to_susceptibility_4 {
     private String lv_facts_for_ecii_csv_path = "/Volumes/Samsung_T5/projects_including_data_expr/residue_projects/data/phite/gene-to-susceptibility/LV_facts_for_ECII_combined.csv";
     private String lv_to_geneID_mapping = "/Volumes/Samsung_T5/projects_including_data_expr/residue_projects/data/phite/gene-to-susceptibility/LV_to_GeneID_mapping.csv";
     private String gene_to_disease_mapping = "/Volumes/Samsung_T5/projects_including_data_expr/residue_projects/data/phite/gene-to-susceptibility/DREAM-genes.csv";
-    private String KGSave_to_path = "/Volumes/Samsung_T5/projects_including_data_expr/residue_projects/data/phite/gene-to-susceptibility/running-again-06-19-2021/gene-to-susceptibility-combined-v4.owl";
+    private String KGSave_to_path = "/Volumes/Samsung_T5/projects_including_data_expr/residue_projects/data/phite/gene-to-susceptibility/gene-to-susceptibility-combined-v2.owl";
 
 
     OWLObjectProperty objPropSubjectAssociatedWithHighForLV = null;
     OWLObjectProperty objPropSubjectAssociatedWithLowForLV = null;
     OWLObjectProperty objPropSubjectAssociatedWithMediumForLV = null;
+    // for domain and range settings
+    OWLClass owlClassSuperClassSubject = null;
+    OWLClass owlClassSuperClassGene = null;
+    OWLClass owlClassSuperClassDisease = null;
 
     OWLObjectProperty objPropLVAssociatedWithGene = null;
     OWLObjectProperty objPropGeneAssociatedWithDisease = null;
 
     private int counter;
-
-    // all genes which were referred in dream-genes list
-    private HashSet<String> dreamGenesCachedList = null;
 
     public void initOntoFactory() {
         owlOntologyManager = OWLManager.createOWLOntologyManager();
@@ -57,7 +57,9 @@ public class Gene_to_susceptibility_4 {
     /**
      *
      */
-    private void createObjProps() {
+    private HashSet<OWLAxiom> createObjProps() {
+
+        HashSet<OWLAxiom> owlAxioms = new HashSet<>();
 
         IRI lowForIRI = IRI.create(prefix, "lowFor");
         objPropSubjectAssociatedWithLowForLV = owlDataFactory.getOWLObjectProperty(lowForIRI);
@@ -68,29 +70,33 @@ public class Gene_to_susceptibility_4 {
         IRI highForIRI = IRI.create(prefix, "highFor");
         objPropSubjectAssociatedWithHighForLV = owlDataFactory.getOWLObjectProperty(highForIRI);
 
+        // set domain and range
+        owlAxioms.add(owlDataFactory.getOWLObjectPropertyDomainAxiom(objPropSubjectAssociatedWithLowForLV,
+                owlDataFactory.getOWLThing()));
+        owlAxioms.add(owlDataFactory.getOWLObjectPropertyRangeAxiom(objPropSubjectAssociatedWithLowForLV,
+                owlClassSuperClassGene));
+
+        owlAxioms.add(owlDataFactory.getOWLObjectPropertyDomainAxiom(objPropSubjectAssociatedWithMediumForLV,
+                owlDataFactory.getOWLThing()));
+        owlAxioms.add(owlDataFactory.getOWLObjectPropertyRangeAxiom(objPropSubjectAssociatedWithMediumForLV,
+                owlClassSuperClassGene));
+
+        owlAxioms.add(owlDataFactory.getOWLObjectPropertyDomainAxiom(objPropSubjectAssociatedWithHighForLV,
+                owlDataFactory.getOWLThing()));
+        owlAxioms.add(owlDataFactory.getOWLObjectPropertyRangeAxiom(objPropSubjectAssociatedWithHighForLV,
+                owlClassSuperClassGene));
+
         IRI lvAssociatedWithGene = IRI.create(prefix, "lvAssociatedWithGene");
         objPropLVAssociatedWithGene = owlDataFactory.getOWLObjectProperty(lvAssociatedWithGene);
 
         IRI geneAssociatedWithDisease = IRI.create(prefix, "geneAssociatedWithDisease");
         objPropGeneAssociatedWithDisease = owlDataFactory.getOWLObjectProperty(geneAssociatedWithDisease);
-    }
 
-    private void cacheDreamGenes(String path) {
-
-        logger.info("Parsing " + path + " to cache dream genes");
-        dreamGenesCachedList = new HashSet<>();
-        CSVParser csvParser = Utility.parseCSV(path, true);
-
-        for (CSVRecord strings : csvParser) {
-            String gene_id = strings.get("Gene_ids");
-            if (gene_id != null && gene_id.length() > 0) {
-                dreamGenesCachedList.add(gene_id);
-            }
-        }
+        return owlAxioms;
     }
 
     /**
-     * create triple: LV1---rdf:Type---Pathway1 ?????
+     * create triple: Gene-1---rdf:Type---Disease-1
      *
      * @param path
      * @return
@@ -104,24 +110,19 @@ public class Gene_to_susceptibility_4 {
         for (CSVRecord strings : csvParser) {
             // column lv_id
             String lv_id = strings.get("lv_id");
-            if (lv_id != null) {
+            if (lv_id != null && lv_id.length() > 0) {
                 IRI lv_id_iri = IRI.create(prefix, lv_id);
                 OWLNamedIndividual indivLVID = owlDataFactory.getOWLNamedIndividual(lv_id_iri);
 
-                OWLClassAssertionAxiom owlClassAssertionAxiom = null;
-
                 // column gene_id
                 String gene_id = strings.get("gene_id");
-                if (gene_id != null && gene_id.length() > 0 && dreamGenesCachedList.contains(gene_id))  {
+                if (gene_id != null && gene_id.length() > 0) {
                     IRI gene_id_iri = IRI.create(prefix, gene_id);
-                    OWLNamedIndividual indivGeneID = owlDataFactory.getOWLNamedIndividual(gene_id_iri);
-                    owlClassAssertionAxiom = owlDataFactory.
-                            getOWLClassAssertionAxiom(owlDataFactory.getOWLThing(), indivGeneID);
-
-                    OWLAxiom owlPropertyAssertionAxiom = owlDataFactory.getOWLObjectPropertyAssertionAxiom(objPropLVAssociatedWithGene, indivLVID, indivGeneID);
+                    OWLClass owlClass = owlDataFactory.getOWLClass(gene_id_iri);
+                    OWLClassAssertionAxiom owlClassAssertionAxiom = owlDataFactory.
+                            getOWLClassAssertionAxiom(owlClass, indivLVID);
 
                     owlAssertionAxioms.add(owlClassAssertionAxiom);
-                    owlAssertionAxioms.add(owlPropertyAssertionAxiom);
                 }
             }
         }
@@ -133,7 +134,7 @@ public class Gene_to_susceptibility_4 {
     }
 
     /**
-     * create triple: LV1---rdf:Type---Pathway1
+     * create triple: LV1---rdf:Type---Gene-1
      * expected file to work: DREAM-genes.csv
      *
      * @param path
@@ -151,34 +152,22 @@ public class Gene_to_susceptibility_4 {
 
             // column gene_id
             String gene_id = strings.get("Gene_ids");
-            if (gene_id != null) {
+            if (gene_id != null && gene_id.length() > 0) {
+
                 IRI gene_id_iri = IRI.create(prefix, gene_id);
-                OWLNamedIndividual indivGeneId = owlDataFactory.getOWLNamedIndividual(gene_id_iri);
-                OWLClassAssertionAxiom owlClassAssertionAxiom = owlDataFactory.
-                        getOWLClassAssertionAxiom(owlDataFactory.getOWLThing(), indivGeneId);
+                OWLClass owlClassGene = owlDataFactory.getOWLClass(gene_id_iri);
 
                 // column Disease_or_Condition
                 String diseaseName = strings.get("Disease_or_Condition");
-                if (diseaseName != null) {
-                    // create dummy indiv
-                    IRI dummy_disease_iri = IRI.create(prefix, diseaseName + counter);
-                    counter += 1;
-                    OWLNamedIndividual indiv_dummy_DiseaseID = owlDataFactory.getOWLNamedIndividual(dummy_disease_iri);
+                if (diseaseName != null && diseaseName.length() > 0) {
 
-                    // assign to class
-                    //our expected outcome is diseaseName so both typed and without typed (indiv without class assertion) versions are created
-                    IRI disease_Class_IRI = IRI.create(prefix, diseaseName);
-                    OWLClass owlClassDisease = owlDataFactory.getOWLClass(disease_Class_IRI);
-                    owlClassAssertionAxiom = owlDataFactory.
-                            getOWLClassAssertionAxiom(owlClassDisease, indiv_dummy_DiseaseID);
-                    owlAssertionAxioms.add(owlClassAssertionAxiom);
+                    IRI disease_id_iri = IRI.create(prefix, gene_id);
+                    OWLClass owlClassDisease = owlDataFactory.getOWLClass(disease_id_iri);
 
-                    OWLAxiom owlPropertyAssertionAxiom = owlDataFactory.getOWLObjectPropertyAssertionAxiom(
-                            objPropGeneAssociatedWithDisease,
-                            indivGeneId,
-                            indiv_dummy_DiseaseID);
+                    // assign sub and super class
+                    OWLAxiom owlSubClassOfAxiom = owlDataFactory.getOWLSubClassOfAxiom(owlClassGene, owlClassDisease);
 
-                    owlAssertionAxioms.add(owlPropertyAssertionAxiom);
+                    owlAssertionAxioms.add(owlSubClassOfAxiom);
                 }
             }
         }
@@ -208,11 +197,11 @@ public class Gene_to_susceptibility_4 {
 
             // column value
             String value = strings.get("value");
-            if (value != null) {
+            if (value != null && value.length() > 0) {
                 if (value.equalsIgnoreCase("Low") || value.equalsIgnoreCase("High") | value.equalsIgnoreCase("Medium")) {
                     // column sample_id
                     String sample_id = strings.get("subject_ids");
-                    if (sample_id != null) {
+                    if (sample_id != null && sample_id.length() > 0) {
                         IRI sample_id_iri = IRI.create(prefix, sample_id);
                         OWLNamedIndividual indivSampleID = owlDataFactory.getOWLNamedIndividual(sample_id_iri);
                         OWLClassAssertionAxiom owlClassAssertionAxiom = owlDataFactory.
@@ -220,7 +209,7 @@ public class Gene_to_susceptibility_4 {
 
                         // column lv_id_space_omitted
                         String lv_id_space_omitted = strings.get("lv_id_space_omitted");
-                        if (lv_id_space_omitted != null) {
+                        if (lv_id_space_omitted != null && lv_id_space_omitted.length() > 0) {
                             IRI lv_id_space_omitted_iri = IRI.create(prefix, lv_id_space_omitted);
                             OWLNamedIndividual indivLVID = owlDataFactory.getOWLNamedIndividual(lv_id_space_omitted_iri);
                             owlClassAssertionAxiom = owlDataFactory.
@@ -255,14 +244,11 @@ public class Gene_to_susceptibility_4 {
             counter = 0;
             initOntoFactory();
 
-            // cache the gene names, so only those genes will be used to relate
-            // latent_variable to gene_id
-            cacheDreamGenes(gene_to_disease_mapping);
+            HashSet<OWLAxiom> owlAxioms = new HashSet<>();
 
             // create objProps
-            createObjProps();
+            owlAxioms.addAll(createObjProps());
 
-            HashSet<OWLAxiom> owlAxioms = new HashSet<>();
             owlAxioms.addAll(parseLV_facts_for_ECII(lv_facts_for_ecii_csv_path));
             owlAxioms.addAll(parseLV_to_Gene_ID_mapping(lv_to_geneID_mapping));
             owlAxioms.addAll(parseGene_to_Disease_mapping(gene_to_disease_mapping));
@@ -280,7 +266,7 @@ public class Gene_to_susceptibility_4 {
      * @param args
      */
     public static void main(String[] args) {
-        Gene_to_susceptibility_4 gene_to_susceptibility = new Gene_to_susceptibility_4();
+        Gene_to_susceptibility_5 gene_to_susceptibility = new Gene_to_susceptibility_5();
 
         try {
             gene_to_susceptibility.createKG();
